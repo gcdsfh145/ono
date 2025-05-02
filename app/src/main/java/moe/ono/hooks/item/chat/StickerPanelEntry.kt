@@ -17,6 +17,7 @@ import moe.ono.creator.stickerPanel.ICreator
 import moe.ono.creator.stickerPanel.PanelUtils
 import moe.ono.hooks._base.BaseClickableFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
+import moe.ono.hooks._core.factory.HookItemFactory.getItem
 import moe.ono.hooks.dispatcher.OnMenuBuilder
 import moe.ono.reflex.Reflex
 import moe.ono.reflex.XMethod
@@ -99,6 +100,9 @@ class StickerPanelEntry : BaseClickableFunctionHookItem(), OnMenuBuilder {
     )
 
     override fun onGetMenu(aioMsgItem: Any, targetType: String, param: MethodHookParam) {
+        if (!getItem(this.javaClass).isEnabled) {
+            return
+        }
         val item: Any = CustomMenu.createItemIconNt(
             aioMsgItem,
             "保存",
