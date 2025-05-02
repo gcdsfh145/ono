@@ -33,10 +33,6 @@ class QQMessageFetcher : BaseSwitchFunctionHookItem(), OnMenuBuilder {
     override fun load(classLoader: ClassLoader) {}
 
     override fun onGetMenu(aioMsgItem: Any, targetType: String, param: MethodHookParam) {
-        if (!getItem(this.javaClass).isEnabled) {
-            return
-        }
-
         val item: Any = CustomMenu.createItemIconNt(
             aioMsgItem,
             "拉取",

@@ -70,8 +70,13 @@ public class Nt_kernel_bridge {
     }
 
     public static MsgAttributeInfo getDefaultAttributeInfo() {
-
-        VASMsgNamePlate plate = new VASMsgNamePlate(258, 64, 0, 0, 0, 0, 258, 0, new ArrayList<>(), 0, 0);
+        VASMsgNamePlate plate;
+        // 不确定何时变更的 VASMsgNamePlate，因此只能使用 try
+        try {
+            plate = new VASMsgNamePlate(258, 64, 0, 0, 0, 0, 258, 0, new ArrayList<>(), 0, 0);
+        } catch (NoSuchMethodError e) {
+            plate = new VASMsgNamePlate(258, 64, 0, 0, 0, 0, 258, 0, new ArrayList<>(), 0, 0, 0);
+        }
         VASMsgBubble bubble = new VASMsgBubble(0, 0, 0, 0);
         VASMsgFont font = new VASMsgFont(65536, 0L, 0, 0, 0);
         VASMsgAvatarPendant pendant = new VASMsgAvatarPendant();
