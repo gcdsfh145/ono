@@ -35,25 +35,49 @@ public class QSettingsInjector extends ApiHookItem {
         // 8.9.70+
         Class<?> kMainSettingFragment = Initiator.load("com.tencent.mobileqq.setting.main.MainSettingFragment");
         if (kMainSettingFragment != null) {
-            Class<?> kMainSettingConfigProvider = Initiator.loadClass("com.tencent.mobileqq.setting.main.MainSettingConfigProvider");
+            // MainSettingConfigProvider was removed in 9.1.65.24690(9516) gray release
+            Class<?> kMainSettingConfigProvider = Initiator.load("com.tencent.mobileqq.setting.main.MainSettingConfigProvider");
             // 9.1.20+, NewSettingConfigProvider, A/B test on 9.1.20
             Class<?> kNewSettingConfigProvider = Initiator.load("com.tencent.mobileqq.setting.main.NewSettingConfigProvider");
-            Method getItemProcessListOld = Reflex.findSingleMethod(kMainSettingConfigProvider, List.class, false, Context.class);
+            Method getItemProcessListOld = null;
+            if (kMainSettingConfigProvider != null) {
+                getItemProcessListOld = Reflex.findSingleMethod(kMainSettingConfigProvider, List.class, false, Context.class);
+            }
             Method getItemProcessListNew = null;
             if (kNewSettingConfigProvider != null) {
                 getItemProcessListNew = Reflex.findSingleMethod(kNewSettingConfigProvider, List.class, false, Context.class);
             }
-            Class<?> kAbstractItemProcessor = Initiator.loadClass("com.tencent.mobileqq.setting.main.processor.AccountSecurityItemProcessor").getSuperclass();
+            if (getItemProcessListOld == null && getItemProcessListNew == null) {
+                throw new IllegalStateException("getItemProcessListOld == null && getItemProcessListNew == null");
+            }
+            Class<?> kAbstractItemProcessor = null;
+            for (String possibleParent : new String[]{
+                    "com.tencent.mobileqq.setting.main.processor.AccountSecurityItemProcessor",
+                    "com.tencent.mobileqq.setting.main.processor.AboutItemProcessor"
+            }) {
+                Class<?> k = Initiator.load(possibleParent);
+                if (k != null) {
+                    kAbstractItemProcessor = k.getSuperclass();
+                    break;
+                }
+            }
+            if (kAbstractItemProcessor == null) {
+                throw new IllegalStateException("kAbstractItemProcessor == null");
+            }
             // SimpleItemProcessor has too few xrefs. I have no idea how to find it without a list of candidates.
             final String[] possibleSimpleItemProcessorNames = new String[]{
                     // 8.9.70 ~ 9.0.0
                     "com.tencent.mobileqq.setting.processor.g",
                     // 9.0.8+
                     "com.tencent.mobileqq.setting.processor.h",
+                    // 9.1.50 (9006)
+                    "com.tencent.mobileqq.setting.processor.i",
+                    // 9.1.70.25540 (9856) gray
+                    "com.tencent.mobileqq.setting.processor.j",
                     // QQ 9.1.28.21880 (8398) gray
                     "as3.i",
             };
-            List<Class<?>> possibleSimpleItemProcessorCandidates = new ArrayList<>(4);
+            List<Class<?>> possibleSimpleItemProcessorCandidates = new ArrayList<>(5);
             for (String name : possibleSimpleItemProcessorNames) {
                 Class<?> klass = Initiator.load(name);
                 if (klass != null && klass.getSuperclass() == kAbstractItemProcessor) {
@@ -80,18 +104,23 @@ public class QSettingsInjector extends ApiHookItem {
                 // take the smaller one
                 setOnClickListener = candidates.get(0);
             }
+
             XC_MethodHook callback = getXcMethodHook(kSimpleItemProcessor, setOnClickListener);
-            XposedBridge.hookMethod(getItemProcessListOld, callback);
-            if (getItemProcessListNew != null) {
+
+            if (getItemProcessListOld != null) {
+                XposedBridge.hookMethod(getItemProcessListOld, callback);
+            } else {
                 XposedBridge.hookMethod(getItemProcessListNew, callback);
             }
+
         }
     }
 
     @NonNull
     private XC_MethodHook getXcMethodHook(Class<?> kSimpleItemProcessor, Method setOnClickListener) throws NoSuchMethodException {
         Constructor<?> ctorSimpleItemProcessor = kSimpleItemProcessor.getDeclaredConstructor(Context.class, int.class, CharSequence.class, int.class);
-        XC_MethodHook callback = XHook.afterAlways(50, param -> {
+
+        return XHook.afterAlways(50, param -> {
             List<Object> result = (List<Object>) param.getResult();
             Context ctx = (Context) param.args[0];
             Class<?> kItemProcessorGroup = result.get(0).getClass();
@@ -119,8 +148,6 @@ public class QSettingsInjector extends ApiHookItem {
             int indexToInsert = isNew ? 2 : 1;
             result.add(indexToInsert, group);
         });
-
-        return callback;
     }
 
 
