@@ -21,6 +21,8 @@ import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.interfaces.OnSelectListener;
 
 import java.lang.reflect.Method;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import moe.ono.hooks._base.BaseSwitchFunctionHookItem;
 import moe.ono.hooks._core.annotation.HookItem;
@@ -37,27 +39,7 @@ public class ProfileCardMenu extends BaseSwitchFunctionHookItem {
     private static final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private void hookTargetActivity(Activity activity) {
-        // TODO: 更改获取QQ号的方式
         postDelayed(() -> new Thread(() -> {
-            String qqNumber = null;
-            try {
-                TextView tv = activity.findViewById(activity.getResources().getIdentifier("gmx", "id", activity.getPackageName()));
-                String text = tv.getText().toString();
-                qqNumber = text.replace("QQ号：", "").replaceAll("[^0-9]", "");
-            } catch (Exception e) {
-                try {
-                    TextView tv = activity.findViewById(activity.getResources().getIdentifier("info", "id", activity.getPackageName()));
-                    String text = tv.getText().toString();
-                    qqNumber = text.replace("QQ号：", "").replaceAll("[^0-9]", "");
-                } catch (Exception ex) {
-                    Logger.e("无法获取QQ号: ", e);
-                }
-            }
-
-            if (qqNumber != null) {
-                QQ = qqNumber;
-            }
-
             View setting = null;
             try {
                 setting = Utils.getViewByDesc(activity, "设置", 200);
@@ -83,7 +65,20 @@ public class ProfileCardMenu extends BaseSwitchFunctionHookItem {
         try {
             Class<?> clazz = loadClass("com.tencent.mobileqq.profilecard.activity.FriendProfileCardActivity");
             Method m = findMethodExact(clazz, "doOnCreate", Bundle.class);
-            hookAfter(m, param -> hookTargetActivity((Activity) param.thisObject));
+            hookAfter(m, param -> {
+                Activity activity = (Activity) param.thisObject;
+
+                Intent intent = activity.getIntent();
+                if (intent != null) {
+                    Bundle extras = intent.getExtras();
+                    Object allInOne = intent.getParcelableExtra("AllInOne");
+                    QQ = extractUinFromAllInOneString(allInOne.toString());
+                } else {
+                    Logger.d("Intent is null");
+                }
+
+                hookTargetActivity(activity);
+            });
         } catch (ClassNotFoundException e) {
             Logger.e(this.getItemName(), e);
         }
@@ -97,18 +92,13 @@ public class ProfileCardMenu extends BaseSwitchFunctionHookItem {
             new XPopup.Builder(fixContext)
                     .hasShadowBg(false)
                     .atView(v)
-                    .asAttachList(new String[]{"跳转小世界", "查看等级"},
+                    .asAttachList(new String[]{"查看等级"},
                         new int[]{},
                         new OnSelectListener() {
                             @Override
                             public void onSelect(int position, String text) {
                                 switch (position) {
                                     case 0:
-                                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("mqqapi://qcircle/openmainpage?uin=" + QQ));
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        v.getContext().startActivity(intent);
-                                        break;
-                                    case 1:
                                         try {
                                             Utils.jump(v, this.hashCode(), "https://club.vip.qq.com/card/friend?qq=" + QQ);
                                         } catch (Exception e) {
@@ -123,4 +113,12 @@ public class ProfileCardMenu extends BaseSwitchFunctionHookItem {
         }
     }
 
+    public static String extractUinFromAllInOneString(String allInOneStr) {
+        Pattern pattern = Pattern.compile("uin='(\\d+)'");
+        Matcher matcher = pattern.matcher(allInOneStr);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
 }
