@@ -31,6 +31,9 @@ class ChatScrollMemory : BaseSwitchFunctionHookItem() {
     companion object {
         @JvmStatic
         fun createGrayTip(seq: Int, cseq: Int, peer: String, type: Int) {
+            if (!getItem(ChatScrollMemory().javaClass).isEnabled) {
+                return
+            }
             if (seq != -1 && cseq - seq > 100) {
                 val builder = NtGrayTipHelper.NtGrayTipJsonBuilder()
 
