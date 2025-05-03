@@ -2,18 +2,26 @@ package moe.ono.hooks.base.api
 
 import android.os.Bundle
 import android.view.View
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
+import moe.ono.bridge.kernelcompat.ContactCompat
+import moe.ono.config.CacheConfig
+import moe.ono.config.ONOConf
 import moe.ono.hooks._base.ApiHookItem
 import moe.ono.hooks._base.BaseSwitchFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks._core.factory.ExceptionFactory
+import moe.ono.hooks.item.chat.ChatScrollMemory
 import moe.ono.reflex.ClassUtils
 import moe.ono.reflex.FieldUtils
 import moe.ono.reflex.Ignore
 import moe.ono.reflex.MethodUtils
+import moe.ono.util.Session.getContact
 
 
 @HookItem(path = "API/监听QQMsgView更新")
 class QQMessageViewListener : ApiHookItem() {
+    var contact: ContactCompat? = null
+
     companion object {
 
         private val ON_AIO_CHAT_VIEW_UPDATE_LISTENER_MAP: HashMap<BaseSwitchFunctionHookItem, OnChatViewUpdateListener> =
@@ -52,9 +60,16 @@ class QQMessageViewListener : ApiHookItem() {
     }
 
     private fun onViewUpdate(aioMsgItem: Any, msgView: View) {
-        val msgRecord: Any = MethodUtils.create(aioMsgItem.javaClass)
+        val msgRecord: MsgRecord = MethodUtils.create(aioMsgItem.javaClass)
             .methodName("getMsgRecord")
             .callFirst(aioMsgItem)
+
+        val peerUid = msgRecord.peerUid
+        val msgSeq = msgRecord.msgSeq
+
+        ONOConf.setInt("ChatScrollMemory0", peerUid, msgSeq.toInt())
+
+
 
         for ((switchFunctionHookItem, listener) in ON_AIO_CHAT_VIEW_UPDATE_LISTENER_MAP.entries) {
             if (switchFunctionHookItem.isEnabled) {
@@ -65,6 +80,8 @@ class QQMessageViewListener : ApiHookItem() {
                 }
             }
         }
+
+        ONOConf.setInt("ChatScrollMemory", peerUid, msgSeq.toInt())
     }
 
     interface OnChatViewUpdateListener {
