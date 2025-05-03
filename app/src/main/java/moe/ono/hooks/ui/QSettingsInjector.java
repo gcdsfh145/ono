@@ -109,7 +109,8 @@ public class QSettingsInjector extends ApiHookItem {
 
             if (getItemProcessListOld != null) {
                 XposedBridge.hookMethod(getItemProcessListOld, callback);
-            } else {
+            }
+            if (getItemProcessListNew != null) {
                 XposedBridge.hookMethod(getItemProcessListNew, callback);
             }
 

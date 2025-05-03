@@ -36,13 +36,18 @@ import moe.ono.hooks.clazz
 import moe.ono.reflex.ClassUtils
 import moe.ono.reflex.ConstructorUtils
 import moe.ono.reflex.FieldUtils
+import moe.ono.reflex.Reflex
 import moe.ono.util.AppRuntimeHelper
 import moe.ono.util.ContactUtils
+import moe.ono.util.HostInfo
 import moe.ono.util.Logger
+import moe.ono.util.QQVersion
 import moe.ono.util.Session
 import rikka.core.content.put
 import top.artmoe.inao.entries.MsgPushOuterClass
 import top.artmoe.inao.entries.QQMessageOuterClass
+
+private val mQQMsgFacade = null
 
 @HookItem(path = "聊天与消息/防撤回", description = "通用群聊/私聊防撤回（协议防撤回）\n需要保活，此功能目前正处于实验阶段\n目前有两种提醒模式")
 class HoldRevokeMsg : BaseSwitchFunctionHookItem() {
@@ -381,6 +386,7 @@ object HoldRevokeMessageCore {
         val builder = NtGrayTipHelper.NtGrayTipJsonBuilder()
         if (selfUid == senderUid) {
             builder.appendText("你")
+            return
         } else {
             builder.append(
                 NtGrayTipHelper.NtGrayTipJsonBuilder.UserItem(
