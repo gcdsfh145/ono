@@ -37,9 +37,9 @@ class ChatScrollMemory : BaseSwitchFunctionHookItem() {
             if (seq != -1 && cseq - seq > 100) {
                 val builder = NtGrayTipHelper.NtGrayTipJsonBuilder()
 
-                builder.appendText("上次查看位置")
+                builder.appendText("上次查看位置 ")
                 builder.append(NtGrayTipHelper.NtGrayTipJsonBuilder.MsgRefItem(
-                    "seq: $seq",
+                    "seq: $seq (${cseq - seq}条未读)",
                     seq.toLong()
                 ))
 
