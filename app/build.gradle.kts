@@ -250,4 +250,6 @@ dependencies {
     implementation(libs.okhttp3.okhttp)
 
     implementation(libs.markdown.core)
+
+    implementation(libs.blurview)
 }

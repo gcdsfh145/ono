@@ -2,38 +2,44 @@
 <moe.ono.ui.view.RadiusCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/sticker_panel_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
     app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
-    android:id="@+id/pb_sender_root_cardview"
+    app:cardBackgroundColor="#00FFFFFF"
     app:rcv_topLeftRadiu="20dp"
-    app:rcv_topRightRadiu="20dp"
-    app:cardBackgroundColor="@color/bg">
+    app:rcv_topRightRadiu="20dp">
 
-    <RelativeLayout
-        android:background="@color/mask_bg"
+    <eightbitlab.com.blurview.BlurView
+        android:id="@+id/blur_bg"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <HorizontalScrollView
-            android:id="@+id/Sticker_Pack_Select_Bar_Container"
-            android:layout_width="match_parent"
-            android:scrollbars="none"
-            android:layout_height="55dp">
-            <LinearLayout
-                android:id="@+id/Sticker_Pack_Select_Bar"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="horizontal" />
-        </HorizontalScrollView>
-        <ScrollView
-            android:layout_below="@+id/Sticker_Pack_Select_Bar_Container"
-            android:background="@color/bg"
-            android:id="@+id/sticker_panel_pack_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        </ScrollView>
-    </RelativeLayout>
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent">
+
+            <HorizontalScrollView
+                android:id="@+id/Sticker_Pack_Select_Bar_Container"
+                android:layout_width="match_parent"
+                android:layout_height="65dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/Sticker_Pack_Select_Bar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"/>
+            </HorizontalScrollView>
+
+            <ScrollView
+                android:id="@+id/sticker_panel_pack_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/Sticker_Pack_Select_Bar_Container"
+                android:background="@android:color/transparent"/>
+        </RelativeLayout>
+    </eightbitlab.com.blurview.BlurView>
 </moe.ono.ui.view.RadiusCardView>

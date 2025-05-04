@@ -32,7 +32,7 @@ public class PanelSetImpl implements ICreator.IMainPanelItem {
     @SuppressLint("InflateParams")
     public PanelSetImpl(Context context) {
         mContext = context;
-        cacheView = (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.sticker_panel_set,null);
+        cacheView = (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.sticker_panel_setting,null);
 
         EditText edit_show_title = cacheView.findViewById(R.id.sticker_panel_set_ed_change_title);
         edit_show_title.setEnabled(ONOConf.getBoolean("global", "sticker_panel_set_ch_change_title", false));
