@@ -39,9 +39,10 @@ class ChatScrollMemory : BaseSwitchFunctionHookItem() {
 
                 builder.appendText("上次查看位置 ")
                 builder.append(NtGrayTipHelper.NtGrayTipJsonBuilder.MsgRefItem(
-                    "seq: $seq (${cseq - seq}条未读)",
+                    "seq: $seq",
                     seq.toLong()
                 ))
+                builder.appendText(" (${cseq - seq}条未读) ")
 
                 NtGrayTipHelper.addLocalJsonGrayTipMsg(
                     AppRuntimeHelper.getAppRuntime()!!,
