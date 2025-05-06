@@ -40,6 +40,7 @@ import eightbitlab.com.blurview.RenderEffectBlur;
 import eightbitlab.com.blurview.RenderScriptBlur;
 import moe.ono.R;
 import moe.ono.config.ONOConf;
+import moe.ono.creator.stickerPanel.MainItemImpl.InputFromLocalImpl;
 import moe.ono.creator.stickerPanel.MainItemImpl.LocalStickerImpl;
 import moe.ono.creator.stickerPanel.MainItemImpl.PanelSetImpl;
 import moe.ono.creator.stickerPanel.MainItemImpl.RecentStickerImpl;
@@ -136,6 +137,14 @@ public class ICreator extends BottomPopupView {
     }
 
     private void initDefItemsLast() {
+        IMainPanelItem inputPic = new InputFromLocalImpl(getContext());
+        AtomicReference<ViewGroup> sticker_panel_input_view = new AtomicReference<>();
+        ViewGroup inputView = (ViewGroup) createPicImage(R.drawable.sticker_panel_input_icon, "导入图片", v -> switchToItem(sticker_panel_input_view.get()));
+        sticker_panel_input_view.set(inputView);
+        inputView.setTag(inputPic);
+        topSelectBar.addView(inputView);
+
+
         IMainPanelItem setting = new PanelSetImpl(getContext());
         AtomicReference<ViewGroup> ref = new AtomicReference<>();
         ViewGroup tab = (ViewGroup) createPicImage(
