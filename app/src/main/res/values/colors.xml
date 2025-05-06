@@ -30,7 +30,7 @@
 
     <!-- Text Colors -->
     <color name="firstTextColor">#FF202124</color>
-    <color name="secondTextColor">#203C4043</color>
+    <color name="secondTextColor">#FF3C4043</color>
     <color name="thirdTextColor">#FF5F6368</color>
     <color name="whiteTextColor">#FFFFFFFF</color>
     <color name="rippleColor">#143C4043</color>

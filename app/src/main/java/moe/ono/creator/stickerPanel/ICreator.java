@@ -1,5 +1,7 @@
 package moe.ono.creator.stickerPanel;
 
+import static android.os.Build.VERSION_CODES.S;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -223,7 +225,7 @@ public class ICreator extends BottomPopupView {
         panel.addView(img);
         TextView tv = new TextView(getContext());
         tv.setText(title);
-        tv.setTextColor(getContext().getColor(R.color.global_font_color));
+        tv.setTextColor(getContext().getColor(R.color.white));
         tv.setGravity(Gravity.CENTER_HORIZONTAL);
         tv.setTextSize(10);
         tv.setSingleLine();
@@ -263,24 +265,25 @@ public class ICreator extends BottomPopupView {
     protected void onCreate() {
         super.onCreate();
 
-        blurBg = findViewById(R.id.blur_bg);
-        if (blurBg != null) {
-            float radiusPx = LayoutHelper.dip2px(getContext(), 10f);
+        if (Build.VERSION.SDK_INT >= S) {
+            blurBg = findViewById(R.id.blur_bg);
+            if (blurBg != null) {
+                float radiusPx = LayoutHelper.dip2px(getContext(), 10f);
 
-            Activity act   = findActivity(getContext());
-            View decor     = act.getWindow().getDecorView();
-            ViewGroup root = decor.findViewById(android.R.id.content);
-            Drawable winBg = decor.getBackground();
+                Activity act   = findActivity(getContext());
+                View decor     = act.getWindow().getDecorView();
+                ViewGroup root = decor.findViewById(android.R.id.content);
+                Drawable winBg = decor.getBackground();
 
-            BlurAlgorithm algo = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-                    ? new RenderEffectBlur()
-                    : new RenderScriptBlur(getContext());
+                BlurAlgorithm algo = new RenderEffectBlur();
 
-            blurBg.setupWith(root, algo)
-                    .setFrameClearDrawable(winBg)
-                    .setBlurRadius(radiusPx)
-                    .setOverlayColor(0x303C4043);
+                blurBg.setupWith(root, algo)
+                        .setFrameClearDrawable(winBg)
+                        .setBlurRadius(radiusPx)
+                        .setOverlayColor(0x403C4043);
+            }
         }
+
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             initTopSelectBar();
@@ -338,7 +341,14 @@ public class ICreator extends BottomPopupView {
         Glide.get(HostInfo.getApplication()).clearMemory();
     }
 
-    @Override protected int getImplLayoutId() { return R.layout.sticker_panel_plus_main; }
+    @Override protected int getImplLayoutId() {
+        if (Build.VERSION.SDK_INT >= S) {
+            return R.layout.sticker_panel_plus_main;
+        } else {
+            return R.layout.sticker_panel_plus_main_below_android12;
+        }
+
+    }
     @Override protected int getMaxHeight()   { return (int) (XPopupUtils.getScreenHeight(getContext()) * POPUP_HEIGHT_RATIO); }
     @Override protected int getPopupHeight() { return (int) (XPopupUtils.getScreenHeight(getContext()) * POPUP_HEIGHT_RATIO); }
 
