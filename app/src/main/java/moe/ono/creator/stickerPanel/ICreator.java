@@ -300,7 +300,7 @@ public class ICreator extends BottomPopupView {
                                 "sticker_panel_set_last_select",
                                 String.valueOf(savedSelectID)));
             }
-            if (savedSelectID != 0) {
+            if (savedSelectID != 0 && open_last_select) {
                 for (ViewGroup tab : mItems) {
                     IMainPanelItem m = (IMainPanelItem) tab.getTag();
                     if (m.getID() == savedSelectID) {
