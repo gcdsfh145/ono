@@ -73,7 +73,7 @@ include(
     ":libs:ui:xView",
     ":libs:util:libxposed:api",
     ":libs:util:libxposed:service",
-    ":libs:util:ezXHelper",
+    ":libs:util:ezxhelper",
     ":libs:util:annotation-scanner",
 )
 
