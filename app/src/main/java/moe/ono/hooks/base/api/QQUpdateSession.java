@@ -38,20 +38,17 @@ public class QQUpdateSession extends ApiHookItem {
             String cPeerUID = getCurrentPeerIDByAIOContact(AIOContact);
             int cChatType = getCurrentChatTypeByAIOContact(AIOContact);
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    int seq0 = ONOConf.getInt("ChatScrollMemory0", cPeerUID, -1);
-                    try {
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    int seq = ONOConf.getInt("ChatScrollMemory", cPeerUID, -1);
-                    Logger.d("seq: " + seq0 + "::" + seq);
-
-                    ChatScrollMemory.createGrayTip(seq0, seq, cPeerUID, cChatType);
+            new Thread(() -> {
+                int seq0 = ONOConf.getInt("ChatScrollMemory", cPeerUID, -1);
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
+                int seq = ONOConf.getInt("ChatScrollMemory", cPeerUID, -1);
+                Logger.d("seq: " + seq0 + "::" + seq);
+
+                ChatScrollMemory.createGrayTip(seq0, seq, cPeerUID, cChatType);
             }).start();
 
 

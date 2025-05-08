@@ -67,8 +67,6 @@ class QQMessageViewListener : ApiHookItem() {
         val peerUid = msgRecord.peerUid
         val msgSeq = msgRecord.msgSeq
 
-        ONOConf.setInt("ChatScrollMemory0", peerUid, msgSeq.toInt())
-
 
 
         for ((switchFunctionHookItem, listener) in ON_AIO_CHAT_VIEW_UPDATE_LISTENER_MAP.entries) {
