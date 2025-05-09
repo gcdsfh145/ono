@@ -6,17 +6,20 @@ import android.view.View
 import android.widget.ImageView
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
+import de.robv.android.xposed.XposedHelpers
 import moe.ono.R
 import moe.ono.bridge.ntapi.MsgServiceHelper
 import moe.ono.config.CacheConfig.getRKeyGroup
 import moe.ono.config.CacheConfig.getRKeyPrivate
-import moe.ono.constants.Constants
+import moe.ono.config.ConfigManager
 import moe.ono.config.ONOConf
+import moe.ono.constants.Constants
 import moe.ono.creator.stickerPanel.Env
 import moe.ono.creator.stickerPanel.ICreator
 import moe.ono.creator.stickerPanel.PanelUtils
 import moe.ono.hooks._base.BaseClickableFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
+import moe.ono.hooks._core.factory.HookItemFactory.getItem
 import moe.ono.hooks.dispatcher.OnMenuBuilder
 import moe.ono.reflex.Reflex
 import moe.ono.reflex.XMethod
@@ -42,26 +45,41 @@ class StickerPanelEntry : BaseClickableFunctionHookItem(), OnMenuBuilder {
                 ImageView::class.java
             ).ignoreParam().get()
 
+
             hookAfter(method) { param: MethodHookParam ->
                 val imageView = param.result as ImageView
                 if ("表情".contentEquals(imageView.contentDescription)) {
-                    imageView.setOnLongClickListener { view: View ->
-                        ICreator.createPanel(view.context)
-                        true
+                    if (!ConfigManager.dGetBoolean(Constants.PrekCfgXXX + "replaceStickerPanelClickEvent")) {
+                        imageView.setOnLongClickListener { view: View ->
+                            ICreator.createPanel(view.context)
+                            true
+                        }
+                    } else {
+                        val listenerInfo = XposedHelpers.callMethod(imageView, "getListenerInfo")
+                        if (listenerInfo != null) {
+                            val oldClick = XposedHelpers.getObjectField(listenerInfo, "mOnClickListener")
+                                    as? View.OnClickListener
+
+                            oldClick?.let {
+                                imageView.setOnLongClickListener { v ->
+                                    it.onClick(v)
+                                    true
+                                }
+                            }
+
+                            imageView.setOnClickListener { v ->
+                                ICreator.createPanel(v.context)
+                            }
+                        }
                     }
+
+
                 }
             }
         } catch (e: NoSuchMethodException) {
             Logger.e(this.itemName, e)
         }
     }
-
-
-    @SuppressLint("ResourceType")
-    private fun createStickerPanelIcon() {
-        Logger.d("StickerPanelEntry", "on createStickerPanelIcon")
-    }
-
 
     override fun load(classLoader: ClassLoader) {
         hookEmoBtn()
@@ -99,6 +117,9 @@ class StickerPanelEntry : BaseClickableFunctionHookItem(), OnMenuBuilder {
     )
 
     override fun onGetMenu(aioMsgItem: Any, targetType: String, param: MethodHookParam) {
+        if (!getItem(this.javaClass).isEnabled) {
+            return
+        }
         val item: Any = CustomMenu.createItemIconNt(
             aioMsgItem,
             "保存",

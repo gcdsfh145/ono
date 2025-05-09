@@ -11,100 +11,92 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import moe.ono.util.Logger;
 
-@SuppressWarnings("FieldCanBeLocal")
 public class ShadowSafTransientActivity extends Activity {
 
     public static final String PARAM_TARGET_ACTION = "ShadowSafTransientActivity.PARAM_TARGET_ACTION";
     public static final String PARAM_SEQUENCE = "ShadowSafTransientActivity.PARAM_SEQUENCE";
     public static final String PARAM_FILE_NAME = "ShadowSafTransientActivity.PARAM_FILE_NAME";
     public static final String PARAM_MINE_TYPE = "ShadowSafTransientActivity.PARAM_MINE_TYPE";
+
     public static final int TARGET_ACTION_READ = 1;
     public static final int TARGET_ACTION_CREATE_AND_WRITE = 2;
+    public static final int TARGET_ACTION_OPEN_DOCUMENT_TREE = 3;
 
     private static final int REQ_READ_FILE = 10001;
     private static final int REQ_WRITE_FILE = 10002;
+    private static final int REQ_OPEN_DIR = 10003;
 
     private int mSequence;
     private int mTargetAction;
     private int mOriginRequest;
-    private String mMimeType = null;
-    private String mFileName = null;
+    private String mMimeType;
+    private String mFileName;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         setTheme(android.R.style.Theme_Translucent_NoTitleBar);
         super.onCreate(savedInstanceState);
-        Intent startIntent = getIntent();
-        Bundle extras = startIntent.getExtras();
+        Bundle extras = getIntent().getExtras();
         if (extras == null) {
-            finish();
-            return;
+            finish(); return;
         }
         mTargetAction = extras.getInt(PARAM_TARGET_ACTION, -1);
         mSequence = extras.getInt(PARAM_SEQUENCE, -1);
         mFileName = extras.getString(PARAM_FILE_NAME);
         mMimeType = extras.getString(PARAM_MINE_TYPE);
         if (mTargetAction < 0 || mSequence < 0) {
-            finish();
-            return;
+            finish(); return;
         }
-        if (!sRequestMap.containsKey(mSequence)) {
-            Logger.e("sequence not found: " + mSequence + ", finishing");
-            finish();
-            return;
+        Request request = sRequestMap.get(mSequence);
+        if (request == null) {
+            Logger.e("sequence not found: " + mSequence);
+            finish(); return;
         }
         Intent intent;
         switch (mTargetAction) {
-            case TARGET_ACTION_READ: {
+            case TARGET_ACTION_READ:
                 intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
-                // any mine type
-                intent.setType(Objects.requireNonNullElse(mMimeType, "*/*"));
+                intent.setType(request.mimeType != null ? request.mimeType : "*/*");
                 mOriginRequest = REQ_READ_FILE;
                 break;
-            }
-            case TARGET_ACTION_CREATE_AND_WRITE: {
+            case TARGET_ACTION_CREATE_AND_WRITE:
                 intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
-                if (mFileName != null) {
-                    intent.putExtra(Intent.EXTRA_TITLE, mFileName);
+                if (request.fileName != null) {
+                    intent.putExtra(Intent.EXTRA_TITLE, request.fileName);
                 }
-                intent.setType(Objects.requireNonNullElse(mMimeType, "*/*"));
+                intent.setType(request.mimeType != null ? request.mimeType : "*/*");
                 mOriginRequest = REQ_WRITE_FILE;
                 break;
-            }
+            case TARGET_ACTION_OPEN_DOCUMENT_TREE:
+                intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                mOriginRequest = REQ_OPEN_DIR;
+                break;
             default:
                 throw new IllegalArgumentException("Unknown target action: " + mTargetAction);
         }
-        if (!sRequestMap.containsKey(mSequence)) {
-            throw new AssertionError("Unknown sequence: " + mSequence + ", are we in the same process?");
-        }
-        // query SAF here
         try {
             startActivityForResult(intent, mOriginRequest);
         } catch (ActivityNotFoundException e) {
-            Request request = sRequestMap.get(mSequence);
-            if (request != null) {
-                request.callback.onException(e);
-            }
+            request.callback.onException(e);
             sRequestMap.remove(mSequence);
             finish();
         }
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == mOriginRequest) {
-            Uri resultUri = (resultData != null) ? resultData.getData() : null;
+            Uri uri = data != null ? data.getData() : null;
             Request request = sRequestMap.get(mSequence);
             if (request != null) {
-                request.callback.onResult(resultUri);
+                request.callback.onResult(uri);
             }
             sRequestMap.remove(mSequence);
             finish();
@@ -112,12 +104,11 @@ public class ShadowSafTransientActivity extends Activity {
     }
 
     public static class Request {
-
-        public int sequence;
-        public int targetAction;
-        public String mimeType;
-        public String fileName;
-        public RequestResultCallback callback;
+        public final int sequence;
+        public final int targetAction;
+        public final String mimeType;
+        public final String fileName;
+        public final RequestResultCallback callback;
 
         public Request(int sequence, int targetAction, String mimeType, String fileName, RequestResultCallback callback) {
             this.sequence = sequence;
@@ -135,30 +126,20 @@ public class ShadowSafTransientActivity extends Activity {
                                                @Nullable String mimeType, @Nullable String fileName,
                                                @NonNull RequestResultCallback callback) {
         int sequence = sSequenceGenerator.incrementAndGet();
-        sRequestMap.put(sequence, new Request(sequence, targetAction, mimeType, fileName, callback));
-        Intent intent = new Intent(host, ShadowSafTransientActivity.class);
-        intent.putExtra(ShadowSafTransientActivity.PARAM_SEQUENCE, sequence);
-        intent.putExtra(ShadowSafTransientActivity.PARAM_TARGET_ACTION, targetAction);
-        intent.putExtra(ShadowSafTransientActivity.PARAM_FILE_NAME, fileName);
-        intent.putExtra(ShadowSafTransientActivity.PARAM_MINE_TYPE, mimeType);
-        host.startActivity(intent);
+        Request request = new Request(sequence, targetAction, mimeType, fileName, callback);
+        sRequestMap.put(sequence, request);
+        Intent start = new Intent(host, ShadowSafTransientActivity.class);
+        start.putExtra(PARAM_SEQUENCE, sequence);
+        start.putExtra(PARAM_TARGET_ACTION, targetAction);
+        start.putExtra(PARAM_FILE_NAME, fileName);
+        start.putExtra(PARAM_MINE_TYPE, mimeType);
+        start.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        host.startActivity(start);
     }
 
     public interface RequestResultCallback {
-
-        /**
-         * Called when the request is finished.
-         *
-         * @param uri the uri of the file, may be null if the request is canceled.
-         */
         @UiThread
         void onResult(@Nullable Uri uri);
-
-        /**
-         * Called when an exception is thrown.
-         *
-         * @param e the exception, typically an {@link ActivityNotFoundException}.
-         */
         @UiThread
         void onException(@NonNull Throwable e);
     }

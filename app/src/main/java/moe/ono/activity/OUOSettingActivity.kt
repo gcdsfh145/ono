@@ -55,6 +55,7 @@ import moe.ono.util.Utils.jump
 import rikka.material.preference.MaterialSwitchPreference
 import rikka.preference.SimpleMenuPreference
 import java.lang.Integer.max
+import androidx.core.graphics.drawable.toDrawable
 
 open class OUOSettingActivity : BaseActivity() {
     private var mAppBarLayoutHeight: Int = 0
@@ -108,7 +109,7 @@ open class OUOSettingActivity : BaseActivity() {
         setContentView(binding.root)
         // update window background, I don't know why, but it's necessary
         val bgColor = ThemeAttrUtils.resolveColorOrDefaultColorInt(this, android.R.attr.windowBackground, 0)
-        window.setBackgroundDrawable(ColorDrawable(bgColor))
+        window.setBackgroundDrawable(bgColor.toDrawable())
         window.setSoftInputMode(
             WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED
                     or WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN

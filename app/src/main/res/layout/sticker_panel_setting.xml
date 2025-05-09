@@ -20,7 +20,7 @@
         android:layout_marginTop="20dp"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
-        android:backgroundTint="@color/mask_bg">
+        android:backgroundTint="#2F9F9F9F">
 
 
         <LinearLayout
@@ -50,7 +50,7 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="10dp"
                 app:cardElevation="0dp"
-                android:backgroundTint="@color/mask_bg_plus"
+                android:backgroundTint="#529F9F9F"
                 android:layout_marginTop="10dp">
 
 
@@ -71,9 +71,10 @@
                     <EditText
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="12dp"
                         android:layout_marginStart="10dp"
                         android:layout_marginEnd="10dp"
+                        android:layout_marginBottom="10dp"
                         android:id="@+id/sticker_panel_set_ed_change_title"
                         android:hint="外显文字"
                         android:autofillHints=""
@@ -107,7 +108,7 @@
         android:layout_marginTop="20dp"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
-        android:backgroundTint="@color/mask_bg">
+        android:backgroundTint="#2F9F9F9F">
 
 
         <LinearLayout

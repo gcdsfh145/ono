@@ -1,13 +1,16 @@
 package moe.ono.hooks.message;
 
+import static moe.ono.util.HostInfo.requireMinQQVersion;
 import static moe.ono.util.HostInfo.requireMinTimVersion;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import moe.ono.bridge.kernelcompat.ContactCompat;
 import moe.ono.reflex.XField;
 import moe.ono.util.Initiator;
 import moe.ono.util.Logger;
+import moe.ono.util.QQVersion;
 import moe.ono.util.TIMVersion;
 
 public class SessionUtils {
@@ -33,18 +36,18 @@ public class SessionUtils {
     }
 
     public static Serializable AIOParam2ContactRaw(Object AIOParam) {
-        return AIOParam2Contact(AIOParam).toKernelObject();
+        return Objects.requireNonNull(AIOParam2Contact(AIOParam)).toKernelObject();
     }
 
     public static String getCurrentPeerIDByAIOContact(Object AIOContact) throws Exception {
-        return XField.obj(AIOContact).name(requireMinTimVersion(TIMVersion.TIM_4_0_95) ? "e" : "f").type(String.class).get();
+        return XField.obj(AIOContact).name(
+                (requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) || requireMinQQVersion(QQVersion.QQ_9_1_70))
+                        ? "e" : "f").type(String.class).get();
     }
 
     public static int getCurrentChatTypeByAIOContact(Object AIOContact) throws Exception {
-        return XField.obj(AIOContact).name(requireMinTimVersion(TIMVersion.TIM_4_0_95) ? "d" : "e").type(int.class).get();
-    }
-
-    public static String getCurrentGuildIDByAIOContact(Object AIOContact) throws Exception {
-        return XField.obj(AIOContact).name(requireMinTimVersion(TIMVersion.TIM_4_0_95) ? "f" : "g").type(String.class).get();
+        return XField.obj(AIOContact).name(
+                (requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) || requireMinQQVersion(QQVersion.QQ_9_1_70))
+                        ? "d" : "e").type(int.class).get();
     }
 }

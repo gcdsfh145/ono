@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<moe.ono.ui.view.RadiusCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    android:id="@+id/pb_sender_root_cardview"
+    app:rcv_topLeftRadiu="20dp"
+    app:rcv_topRightRadiu="20dp"
+    app:cardBackgroundColor="@color/bg">
+
+    <RelativeLayout
+        android:background="#666666"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <HorizontalScrollView
+            android:id="@+id/Sticker_Pack_Select_Bar_Container"
+            android:layout_width="match_parent"
+            android:scrollbars="none"
+            android:layout_height="65dp">
+            <LinearLayout
+                android:id="@+id/Sticker_Pack_Select_Bar"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+        <ScrollView
+            android:layout_below="@+id/Sticker_Pack_Select_Bar_Container"
+            android:background="#E0E0E0"
+            android:id="@+id/sticker_panel_pack_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </ScrollView>
+    </RelativeLayout>
+
+</moe.ono.ui.view.RadiusCardView>

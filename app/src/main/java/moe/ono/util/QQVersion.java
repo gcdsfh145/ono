@@ -1,5 +1,6 @@
 package moe.ono.util;
 
+
 public class QQVersion {
 
     private QQVersion() {
@@ -140,4 +141,28 @@ public class QQVersion {
     public static final long QQ_9_0_95 = 7368;
     public static final long QQ_9_1_0_BETA_19640 = 7496;
     public static final long QQ_9_1_0 = 7518;
+    public static final long QQ_9_1_5_BETA_20015 = 7646;
+    public static final long QQ_9_1_5 = 7688;
+    public static final long QQ_9_1_10_BETA_20440 = 7816;
+    public static final long QQ_9_1_10 = 7858;
+    public static final long QQ_9_1_15_BETA_20865 = 7986;
+    public static final long QQ_9_1_15 = 8028;
+    public static final long QQ_9_1_16 = 8032;
+    public static final long QQ_9_1_20_BETA_21290 = 8156;
+    public static final long QQ_9_1_20 = 8198;
+    public static final long QQ_9_1_25_BETA_21715 = 8326;
+    public static final long QQ_9_1_25 = 8368;
+    public static final long QQ_9_1_30 = 8538;
+    public static final long QQ_9_1_31 = 8542;
+    public static final long QQ_9_1_35 = 8708;
+    public static final long QQ_9_1_50_BETA = 9006;
+    public static final long QQ_9_1_50 = 9048;
+    public static final long QQ_9_1_52 = 9054;
+    public static final long QQ_9_1_55_BETA_23850 = 9180;
+    public static final long QQ_9_1_55 = 9218;
+    public static final long QQ_9_1_60_BETA_24275 = 9350;
+    public static final long QQ_9_1_60 = 9388;
+    public static final long QQ_9_1_65_BETA_24705 = 9522;
+    public static final long QQ_9_1_65 = 9558;
+    public static final long QQ_9_1_70 = 9898;
 }

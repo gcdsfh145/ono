@@ -48,7 +48,7 @@ public class MarkdownGuard extends BaseSwitchFunctionHookItem {
                 String content_replaced = replacedMessage[0];
                 if (Boolean.parseBoolean(replacedMessage[1])){
                     content_replaced = content_replaced.replace("`", "^");
-                    content_replaced += "\n***\n# 以下消息来自ovo!\n- 提示: 此markdown不合法！已阻止资源加载\n- 原因：此消息内包含了一个或多个非官方的图片资源链接。\ncontent:\n```markdown\n"+content+"```";
+                    content_replaced += "\n***\n# 以下消息来自ovo!\n\n- 提示: 此markdown不合法！已阻止资源加载\n- 原因：此消息内包含了一个或多个非官方的图片资源链接。";
                 }
                 MarkdownElement markdownElement = new MarkdownElement(content_replaced);
                 param.args[0] = markdownElement;

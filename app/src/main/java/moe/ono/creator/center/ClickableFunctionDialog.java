@@ -290,10 +290,10 @@ public class ClickableFunctionDialog {
         checkBox.setText("启用");
 
         final MaterialCheckBox checkBox2 = new MaterialCheckBox(context);
-        checkBox2.setText("在底部新增一个按钮用于打开面板 (没写)");
+        checkBox2.setText("替换长按事件优先级（轻触即唤起）");
 
         checkBox.setChecked(ConfigManager.dGetBoolean(PrekClickableXXX + getItem(StickerPanelEntry.class).getPath()));
-        checkBox2.setChecked(ConfigManager.dGetBoolean(PrekCfgXXX + "createStickerPanelIcon"));
+        checkBox2.setChecked(ConfigManager.dGetBoolean(PrekCfgXXX + "replaceStickerPanelClickEvent"));
         final TextView textView = new TextView(context);
         textView.setText("更多设置");
         layout.addView(checkBox);
@@ -318,7 +318,7 @@ public class ClickableFunctionDialog {
         });
 
         checkBox2.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            ConfigManager.dPutBoolean(PrekCfgXXX + "createStickerPanelIcon", isChecked);
+            ConfigManager.dPutBoolean(PrekCfgXXX + "replaceStickerPanelClickEvent", isChecked);
             if (isChecked) {
                 item.startLoad();
             }

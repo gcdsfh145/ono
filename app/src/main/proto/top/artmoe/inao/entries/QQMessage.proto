@@ -26,6 +26,7 @@ message QQMessage {
     int32 subSeq = 3;
     int32 msgSeq = 5;
     int64 msgTime = 6;
+    uint64 msg_uid = 12;
   }
   message MessageBody {
     RichMsg richMsg = 1;

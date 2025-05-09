@@ -3,11 +3,13 @@ package moe.ono.config;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 
+import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
+import moe.ono.bridge.kernelcompat.ContactCompat;
 import moe.ono.util.Logger;
 
 public class CacheConfig {
@@ -28,6 +30,7 @@ public class CacheConfig {
     private static Class x5WebViewClass;
     private static Class x5ValueCallbackClass;
     private static MsgRecord msgRecord;
+    private static ContactCompat contactCompat;
 
     public static String getRKeyGroup() {
         if (rkeyGroup == null){
@@ -121,6 +124,14 @@ public class CacheConfig {
     public static void setAutoMosaicNameNT(Boolean isAutoMosaicNameNT) {
         Objects.requireNonNull(isAutoMosaicNameNT);
         CacheConfig.isAutoMosaicNameNT = isAutoMosaicNameNT;
+    }
+
+    public static ContactCompat getContactCompat() {
+        return Objects.requireNonNullElse(contactCompat, null);
+    }
+
+    public static void setContactCompat(ContactCompat contactCompat) {
+        CacheConfig.contactCompat = contactCompat;
     }
 
 
