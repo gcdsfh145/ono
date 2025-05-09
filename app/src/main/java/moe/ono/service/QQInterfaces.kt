@@ -7,7 +7,7 @@ import mqq.app.MobileQQ
 abstract class QQInterfaces {
 
     companion object {
-        val app = (if (PlatformUtils.isMqqPackage())
+        var app = (if (PlatformUtils.isMqqPackage())
             MobileQQ.getMobileQQ().waitAppRuntime()
         else
             MobileQQ.getMobileQQ().waitAppRuntime(null)) as AppInterface
@@ -29,6 +29,13 @@ abstract class QQInterfaces {
             toServiceMsg.putWupBuffer(data)
             toServiceMsg.addAttribute("req_pb_protocol_flag", isProto)
             sendToServiceMsg(toServiceMsg)
+        }
+
+        fun update(){
+            app = (if (PlatformUtils.isMqqPackage())
+                MobileQQ.getMobileQQ().waitAppRuntime()
+            else
+                MobileQQ.getMobileQQ().waitAppRuntime(null)) as AppInterface
         }
     }
 }

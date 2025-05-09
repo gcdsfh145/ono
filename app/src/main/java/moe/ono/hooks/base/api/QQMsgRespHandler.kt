@@ -11,6 +11,7 @@ import moe.ono.hooks._base.ApiHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.reflex.XField
 import moe.ono.reflex.XMethod
+import moe.ono.service.QQInterfaces
 import moe.ono.ui.CommonContextWrapper
 import moe.ono.util.ContextUtils
 import moe.ono.util.FunProtoData
@@ -42,6 +43,7 @@ class QQMsgRespHandler : ApiHookItem() {
             when (fromServiceMsg.serviceCmd) {
                 "OidbSvcTrpcTcp.0x9067_202" -> {
                     Logger.d("on OidbSvcTrpcTcp.0x9067_202")
+                    QQInterfaces.update()
 
                     val rkeyGroup =
                         obj.getJSONObject("4")
