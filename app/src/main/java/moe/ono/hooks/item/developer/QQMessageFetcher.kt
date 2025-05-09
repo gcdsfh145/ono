@@ -83,13 +83,7 @@ class QQMessageFetcher : BaseSwitchFunctionHookItem(), OnMenuBuilder {
 
     private fun pullGroupMsg(msgRecord: MsgRecord){
         val seq = msgRecord.msgSeq
-        val json = Json { ignoreUnknownKeys = true }
-        val basePbContentString = """{"1": ${msgRecord.peerUid}, "2": ${seq}, "3": ${seq}, "6": 0}"""
-        val parsedJsonElement: JsonElement = json.parseToJsonElement(basePbContentString)
-        val map = parseJsonToMap(parsedJsonElement)
-        val byteArray = encodeMessage(map)
-
-        QQInterfaces.sendBuffer("MessageSvc.PbGetGroupMsg", true, byteArray)
+        sendPacket("MessageSvc.PbGetGroupMsg", """{"1": ${msgRecord.peerUid}, "2": ${seq}, "3": ${seq}, "6": 0}""")
     }
 
     private fun pullC2CMsg(msgRecord: MsgRecord){
