@@ -26,12 +26,16 @@ import org.luckypray.dexkit.result.ClassData;
 import org.luckypray.dexkit.result.MethodData;
 
 import java.lang.reflect.Method;
-import java.util.Map;
 
 import moe.ono.config.ConfigManager;
 import moe.ono.util.Logger;
 
 public class TargetManager {
+
+    /* =========================================================
+     *  Config helpers
+     * ========================================================= */
+
     public static boolean isNeedFindTarget() {
         return cGetBoolean("isNeedFindTarget", true);
     }
@@ -48,142 +52,88 @@ public class TargetManager {
         cPutString("LastQQVersion", version);
     }
 
+    /* =========================================================
+     *  Core: batch search in one DexKit execute()
+     * ========================================================= */
 
-    private static void doFind(DexKitBridge bridge, ClassLoader hostClassLoader, FindMethod findMethod, String key) {
-        Method targetMethod;
-
-        MethodData methodData = bridge.findMethod(findMethod).single();
-
-        try {
-            targetMethod = methodData.getMethodInstance(hostClassLoader);
-            String methodSignature = targetMethod.getDeclaringClass().getName() + "#" + targetMethod.getName();
-            cPutString(key, methodSignature);
-        } catch (Exception e) {
-            Logger.e(key, e);
-        }
-    }
-
-    private static void doFindClass(DexKitBridge bridge, ClassLoader classLoader, FindClass findClass, String key) {
-        ClassData classData = bridge.findClass(findClass).singleOrThrow(() -> {
-            Logger.e(key, "The returned result is not unique");
-            throw new IllegalStateException("The returned result is not unique");
-        });
-        try {
-            Class<?> clazz = classData.getInstance(classLoader);
-            cPutString(key, clazz.getName());
-        } catch (ClassNotFoundException e) {
-            Logger.e("doFindClass", e);
-        }
-    }
-
-
-    public static void runMethodFinder(ApplicationInfo ai, ClassLoader cl, Activity activity, final OnTaskCompleteListener listener) {
-        var ref = new Object() {
-            String result = "";
-        };
-
-
-
+    public static void runMethodFinder(ApplicationInfo ai, ClassLoader cl, Activity activity, OnTaskCompleteListener cb) {
         new Thread(() -> {
             DexKitExecutor executor = new DexKitExecutor(ai.sourceDir, cl);
+            StringBuilder out = new StringBuilder();
 
-            executor.execute((bridge, classLoader) -> doFind(bridge, cl, FindMethod.create()
-                    .matcher(MethodMatcher.create()
-                            .usingStrings("rootVMBuild")
-                    )
-            , MethodCacheKey_AIOParam));
-            ref.result = ref.result + "-> " + cGetString(MethodCacheKey_AIOParam, null);
+            executor.execute((bridge, loader) -> {
+                // Methods
+                findAndCache(bridge, cl, MethodMatcher.create().usingStrings("rootVMBuild"), MethodCacheKey_AIOParam, out);
+                findAndCache(bridge, cl, MethodMatcher.create().usingStrings("inputRoot.findViewById(R.id.send_btn)"), MethodCacheKey_InputRoot, out);
+                findAndCache(bridge, cl, MethodMatcher.create().usingStrings("AIOMarkdownContentComponent").usingStrings("bind status=").paramCount(2), MethodCacheKey_MarkdownAIO, out);
+                findAndCache(bridge, cl, MethodMatcher.create().usingStrings("getBuddyName()"), MethodCacheKey_getBuddyName, out);
+                findAndCache(bridge, cl, MethodMatcher.create().usingStrings("getDiscussionMemberShowName uin is null"), MethodCacheKey_getDiscussionMemberShowName, out);
 
-            executor.execute((bridge, classLoader) -> doFind(bridge, cl, FindMethod.create()
-                            .matcher(MethodMatcher.create()
-                                    .usingStrings("inputRoot.findViewById(R.id.send_btn)")
-                            )
-                    , MethodCacheKey_InputRoot));
-            ref.result = ref.result + "\n\n-> " + cGetString(MethodCacheKey_InputRoot, null);
+                // Class
+                findAndCacheClass(bridge, cl,
+                        ClassMatcher.create().usingStrings("QQCustomMenuItem{title="),
+                        "com.tencent.qqnt.aio.menu.ui",
+                        ClazzCacheKey_AbstractQQCustomMenuItem,
+                        out);
+            });
 
-            executor.execute((bridge, classLoader) -> doFind(bridge, cl, FindMethod.create()
-                            .matcher(MethodMatcher.create()
-                                    .usingStrings("AIOMarkdownContentComponent")
-                                    .usingStrings("bind status=")
-                                    .paramCount(2)
-                            )
-                    , MethodCacheKey_MarkdownAIO));
-            ref.result = ref.result + "\n\n-> " + cGetString(MethodCacheKey_MarkdownAIO, null);
-
-
-            executor.execute((bridge, classLoader) -> doFind(bridge, cl, FindMethod.create()
-                            .matcher(MethodMatcher.create()
-                                    .usingStrings("getBuddyName()")
-                            )
-                    , MethodCacheKey_getBuddyName));
-            ref.result = ref.result + "\n\n-> " + cGetString(MethodCacheKey_getBuddyName, null);
-
-
-            executor.execute((bridge, classLoader) -> doFind(bridge, cl, FindMethod.create()
-                            .matcher(MethodMatcher.create()
-                                    .usingStrings("getDiscussionMemberShowName uin is null")
-                            )
-                    , MethodCacheKey_getDiscussionMemberShowName));
-            ref.result = ref.result + "\n\n-> " + cGetString(MethodCacheKey_getDiscussionMemberShowName, null);
-
-
-            executor.execute((bridge, classLoader) -> doFindClass(bridge, cl, FindClass.create()
-                    .searchPackages("com.tencent.qqnt.aio.menu.ui")
-                    .matcher(ClassMatcher.create()
-                            .usingStrings("QQCustomMenuItem{title=")
-                    ), ClazzCacheKey_AbstractQQCustomMenuItem));
-
-            ref.result = ref.result + "\n\n-> " + cGetString(ClazzCacheKey_AbstractQQCustomMenuItem, null);
-
-
-
-            ref.result = ref.result + "\n\n\n... 搜索结果已缓存";
-
+            out.append("\n\n\n... 搜索结果已缓存");
+            String result = out.toString();
             activity.runOnUiThread(() -> {
-                if (listener != null) {
-                    listener.onTaskComplete(ref.result);
-                }
+                if (cb != null) cb.onTaskComplete(result);
             });
         }).start();
     }
 
-    public static void removeAllMethodSignature() {
-        ConfigManager defaultConfig = ConfigManager.getCache();
-        Map<String, ?> allEntries = defaultConfig.getAll();
-        SharedPreferences.Editor editor = defaultConfig.edit();
-
-        for (String key : allEntries.keySet()) {
-            if (key.startsWith("method_")) {
-                editor.remove(key);
-            }
+    private static void findAndCache(DexKitBridge bridge, ClassLoader cl, MethodMatcher matcher, String key, StringBuilder log) {
+        try {
+            MethodData md = bridge.findMethod(FindMethod.create().matcher(matcher)).single();
+            Method m = md.getMethodInstance(cl);
+            String sig = m.getDeclaringClass().getName() + "#" + m.getName();
+            cPutString(key, sig);
+            log.append("\n").append(key).append("-> ").append(sig);
+        } catch (Throwable t) {
+            Logger.e(key, t);
         }
-        editor.apply();
+    }
+
+    private static void findAndCacheClass(DexKitBridge bridge, ClassLoader cl, ClassMatcher matcher, String pkg, String key, StringBuilder log) {
+        try {
+            FindClass fc = FindClass.create().searchPackages(pkg).matcher(matcher);
+            ClassData cd = bridge.findClass(fc).singleOrThrow(() -> new IllegalStateException("Non‑unique class"));
+            Class<?> clazz = cd.getInstance(cl);
+            cPutString(key, clazz.getName());
+            log.append("\n").append(key).append("-> ").append(clazz.getName());
+        } catch (Throwable t) {
+            Logger.e(key, t);
+        }
+    }
+
+
+    public static void removeAllMethodSignature() {
+        ConfigManager cfg = ConfigManager.getCache();
+        SharedPreferences.Editor e = cfg.edit();
+        for (String k : cfg.getAll().keySet()) if (k.startsWith("method_")) e.remove(k);
+        e.apply();
     }
 
     public static Method requireMethod(String key) {
-        String cachedMethodSignature = cGetString(key, null);
-
         try {
-            String[] parts = cachedMethodSignature.split("#");
-            String className = parts[0];
-            String methodName = parts[1];
-            Class<?> clazz = loadClass(className);
-            return findMethodByName(clazz, methodName);
-        } catch (Exception e) {
-            Logger.e(key, e);
+            String[] p = cGetString(key, null).split("#");
+            return findMethodByName(loadClass(p[0]), p[1]);
+        } catch (Throwable t) {
+            Logger.e(key, t);
+            return null;
         }
-        return null;
     }
 
     public static Class<?> requireClazz(String key) {
-        String cachedClazzName = cGetString(key, null);
-
         try {
-            return loadClass(cachedClazzName);
-        } catch (Exception e) {
-            Logger.e(key, e);
+            return loadClass(cGetString(key, null));
+        } catch (Throwable t) {
+            Logger.e(key, t);
+            return null;
         }
-        return null;
     }
 
     public interface OnTaskCompleteListener {

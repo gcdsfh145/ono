@@ -47,7 +47,6 @@ public class MethodFinderDialog extends CenterPopupView {
             if (flag) {
                 activity.finish();
                 stopAllServices(activity);
-                TargetManager.setIsNeedFindTarget(false);
             }
         });
 
@@ -61,13 +60,14 @@ public class MethodFinderDialog extends CenterPopupView {
                 ProgressBar progressBar = findViewById(R.id.progress_bar);
                 progressBar.setVisibility(View.VISIBLE);
                 TargetManager.runMethodFinder(ai,cl,activity,
-                        result -> {
-                            textView.setText(result);
-                            button.setText("重启 QQ");
-                            button.setVisibility(VISIBLE);
-                            flag = true;
-                            Toasts.success(activity,"完成");
-                            progressBar.setVisibility(View.GONE);
+                    result -> {
+                        textView.setText(result);
+                        button.setText("重启 QQ");
+                        button.setVisibility(VISIBLE);
+                        flag = true;
+                        Toasts.success(activity,"完成");
+                        progressBar.setVisibility(View.GONE);
+                        TargetManager.setIsNeedFindTarget(false);
                     }
                 );
 
