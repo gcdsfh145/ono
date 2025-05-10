@@ -17,7 +17,7 @@ QQ, Now with Superpowers
 在`Xposed 框架`中激活本模块后，在 QQ 自带设置中点击 `ONO` 即可进入设置页面
 
 - Android >= `10.0`
-- QQ >= `9.0.71` （仅适配 QQNT）
+- QQ >= `9.0.71` （仅适配 QQNT，短期内不会适配 TIM）
 
 
 # Reference / 参考项目
