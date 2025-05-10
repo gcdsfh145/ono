@@ -56,8 +56,7 @@ QQ, Now with Superpowers
 - 虚拟定位
 
 ### 其它
-- 优化方法的检索速度
-- native hook
+- 支持 native hook
 
 
 # Support / 赞助
