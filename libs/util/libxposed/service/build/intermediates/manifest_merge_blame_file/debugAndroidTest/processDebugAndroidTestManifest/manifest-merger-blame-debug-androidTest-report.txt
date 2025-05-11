@@ -3,32 +3,32 @@
 3    package="io.github.libxposed.service.test" >
 4
 5    <uses-sdk
-5-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest5627593218365269399.xml:5:5-74
+5-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest1039223143323297276.xml:5:5-74
 6        android:minSdkVersion="24"
-6-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest5627593218365269399.xml:5:15-41
+6-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest1039223143323297276.xml:5:15-41
 7        android:targetSdkVersion="34" />
-7-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest5627593218365269399.xml:5:42-71
+7-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest1039223143323297276.xml:5:42-71
 8
 9    <instrumentation
-9-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest5627593218365269399.xml:11:5-15:82
+9-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest1039223143323297276.xml:11:5-15:82
 10        android:name="android.test.InstrumentationTestRunner"
-10-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest5627593218365269399.xml:11:22-75
+10-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest1039223143323297276.xml:11:22-75
 11        android:functionalTest="false"
-11-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest5627593218365269399.xml:14:22-52
+11-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest1039223143323297276.xml:14:22-52
 12        android:handleProfiling="false"
-12-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest5627593218365269399.xml:13:22-53
+12-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest1039223143323297276.xml:13:22-53
 13        android:label="Tests for io.github.libxposed.service.test"
-13-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest5627593218365269399.xml:15:22-80
+13-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest1039223143323297276.xml:15:22-80
 14        android:targetPackage="io.github.libxposed.service.test" />
-14-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest5627593218365269399.xml:12:22-78
+14-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest1039223143323297276.xml:12:22-78
 15
 16    <application
-16-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest5627593218365269399.xml:7:5-9:19
+16-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest1039223143323297276.xml:7:5-9:19
 17        android:debuggable="true"
 18        android:extractNativeLibs="false" >
 19        <uses-library android:name="android.test.runner" />
-19-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest5627593218365269399.xml:8:9-60
-19-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest5627593218365269399.xml:8:23-57
+19-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest1039223143323297276.xml:8:9-60
+19-->E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest1039223143323297276.xml:8:23-57
 20
 21        <provider
 21-->[:libs:util:libxposed:service] E:\Xposed\ono\libs\util\libxposed\service\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:9:9-13:54

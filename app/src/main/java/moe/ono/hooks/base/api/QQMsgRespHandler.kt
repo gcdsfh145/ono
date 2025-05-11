@@ -15,6 +15,7 @@ import moe.ono.service.QQInterfaces
 import moe.ono.ui.CommonContextWrapper
 import moe.ono.util.ContextUtils
 import moe.ono.util.FunProtoData
+import moe.ono.util.FunProtoData.getUnpPackage
 import moe.ono.util.Logger
 import moe.ono.util.SyncUtils
 import moe.ono.util.Utils
@@ -59,6 +60,10 @@ class QQMsgRespHandler : ApiHookItem() {
 
                     setRKeyGroup(rkeyGroup)
                     setRKeyPrivate(rkeyPrivate)
+                }
+                "OidbSvcTrpcTcp.0xfe1_2" -> {
+                    Logger.d("on OidbSvcTrpcTcp.0xfe1_2")
+                    Logger.i(obj.toString())
                 }
                 "MessageSvc.PbGetGroupMsg" -> {
                     Logger.d("on MessageSvc.PbGetGroupMsg")
@@ -189,19 +194,7 @@ class QQMsgRespHandler : ApiHookItem() {
     }
 
 
-    private fun getUnpPackage(b: ByteArray?): ByteArray? {
-        if (b == null) {
-            return null
-        }
-        if (b.size < 4) {
-            return b
-        }
-        return if (b[0].toInt() == 0) {
-            Arrays.copyOfRange(b, 4, b.size)
-        } else {
-            b
-        }
-    }
+
 
     @Throws(Throwable::class)
     override fun load(classLoader: ClassLoader) {

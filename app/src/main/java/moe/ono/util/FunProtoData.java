@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +18,21 @@ import java.util.List;
 
 public class FunProtoData {
     private final HashMap<Integer, List<Object>> values = new HashMap<>();
+
+    public static byte[] getUnpPackage(byte[] b) {
+        if (b == null) {
+            return null;
+        }
+        if (b.length < 4) {
+            return b;
+        }
+        if ((b[0] & 0xFF) == 0) {
+            return Arrays.copyOfRange(b, 4, b.length);
+        } else {
+            return b;
+        }
+    }
+
     public void fromJSON(JSONObject json){
         try {
             Iterator<String> key_it = json.keys();

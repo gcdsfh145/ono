@@ -45,7 +45,6 @@ QQ, Now with Superpowers
 # TODO / 展望未来
 ### 功能性
 - 发送定时消息
-- 利用 `OidbSvcTrpcTcp.0xfe1_2` 来获取陌生人信息
 - 语音面板（本地）
 - 显示群文件下载次数
 - 对常用 Protobuf 代码进行整合，做成一个新的功能
@@ -54,6 +53,7 @@ QQ, Now with Superpowers
 - 自定义主题
 - 复读机（长按消息）
 - 虚拟定位
+- 加密通话
 
 ### 其它
 - 支持 native hook
