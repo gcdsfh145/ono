@@ -6,8 +6,11 @@ import com.github.kyuubiran.ezxhelper.utils.paramCount
 import com.tencent.common.app.AppInterface
 import com.tencent.qphone.base.remote.FromServiceMsg
 import com.tencent.qphone.base.remote.ToServiceMsg
+import moe.ono.hooks.base.util.Toasts
 import moe.ono.reflex.getFields
 import moe.ono.reflex.getMethods
+import moe.ono.service.inject.ServletPool
+import moe.ono.service.inject.ServletPool.getServlet
 import moe.ono.service.inject.ServletPool.iServlet
 import moe.ono.service.inject.servlets.IServlet
 import moe.ono.util.FunProtoData
@@ -17,12 +20,31 @@ import moe.ono.util.Logger
 import mqq.app.MobileQQ
 import org.json.JSONObject
 import java.lang.reflect.Method
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 
 abstract class QQInterfaces {
     companion object {
         lateinit var mRealHandlerReq: Method
         lateinit var mHandlerResponse: Method
         lateinit var mqqService: Any
+
+        val seqReceiveMap = ConcurrentHashMap<Int, FromServiceMsg>()
+        private val seqFactory = AtomicInteger(0)
+
+        private fun generateSeq(): Int {
+            return seqFactory.addAndGet(1)
+        }
+
+        private fun getReceiveAndRemove(seq: Int): FromServiceMsg? {
+            Logger.d("map::"+seqReceiveMap.toString())
+            if (seqReceiveMap.containsKey(seq)) {
+                val fromServiceMsg = seqReceiveMap[seq]
+                seqReceiveMap.remove(seq)
+                return fromServiceMsg
+            }
+            return null
+        }
 
         var app = (if (PlatformUtils.isMqqPackage())
             MobileQQ.getMobileQQ().waitAppRuntime()
@@ -56,9 +78,15 @@ abstract class QQInterfaces {
         ): Int {
             val toServiceMsg = OidbUtil.makeOIDBPkg(
                 cmd, flag, serviceType, data).apply {
-                appSeq = iServlet.generateSeq()
+                appSeq = generateSeq()
             }
-            sendReq(toServiceMsg)
+            try {
+                sendReq(toServiceMsg)
+            } catch (e: Exception) {
+                Logger.e(e)
+                Toasts.show(app.getApp(), Toasts.TYPE_INFO, "未初始化，请稍后重试")
+            }
+
             return toServiceMsg.appSeq
         }
 
@@ -80,9 +108,9 @@ abstract class QQInterfaces {
 
         fun receive(seq: Int): JSONObject? {
             val startTime = System.currentTimeMillis()
-            while (System.currentTimeMillis() - startTime < 30_000) {
+            while (System.currentTimeMillis() - startTime < 5_000) {
                 Thread.sleep(120)
-                val fromServiceMsg = iServlet.getReceiveAndRemove(seq) ?: continue
+                val fromServiceMsg = getReceiveAndRemove(seq) ?: continue
                 val toServiceMsg = fromServiceMsg.attributes[FromServiceMsg::class.java.simpleName] as ToServiceMsg
                 decodeResponse(toServiceMsg, fromServiceMsg)
                 val data = FunProtoData()
@@ -143,6 +171,7 @@ abstract class QQInterfaces {
             if (!this::mqqService.isInitialized) {
                 throw RuntimeException("初始化失败 -> mqqService")
             }
+
         }
     }
 

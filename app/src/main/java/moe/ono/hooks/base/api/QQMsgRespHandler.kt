@@ -12,6 +12,7 @@ import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.reflex.XField
 import moe.ono.reflex.XMethod
 import moe.ono.service.QQInterfaces
+import moe.ono.service.inject.ServletPool.injectServlet
 import moe.ono.ui.CommonContextWrapper
 import moe.ono.util.ContextUtils
 import moe.ono.util.FunProtoData
@@ -61,10 +62,17 @@ class QQMsgRespHandler : ApiHookItem() {
                     setRKeyGroup(rkeyGroup)
                     setRKeyPrivate(rkeyPrivate)
                 }
-                "OidbSvcTrpcTcp.0xfe1_2" -> {
-                    Logger.d("on OidbSvcTrpcTcp.0xfe1_2")
-                    Logger.i(obj.toString())
+
+                "trpc.qq_new_tech.status_svc.StatusService.UnRegister" -> {
+                    Logger.d("on trpc.qq_new_tech.status_svc.StatusService.UnRegister")
+                    QQInterfaces.update()
+                    injectServlet()
                 }
+
+//                "OidbSvcTrpcTcp.0xfe1_2" -> {
+//                    Logger.d("on OidbSvcTrpcTcp.0xfe1_2")
+////                    Logger.i(obj.toString())
+//                }
                 "MessageSvc.PbGetGroupMsg" -> {
                     Logger.d("on MessageSvc.PbGetGroupMsg")
 

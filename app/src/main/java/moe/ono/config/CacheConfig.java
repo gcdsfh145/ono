@@ -3,7 +3,6 @@ package moe.ono.config;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 
-import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
 
 import java.util.ArrayList;
