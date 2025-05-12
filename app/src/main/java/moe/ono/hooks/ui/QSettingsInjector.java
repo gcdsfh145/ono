@@ -15,7 +15,6 @@ import java.util.List;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XposedHelpers;
 import kotlin.collections.ArraysKt;
 import kotlin.jvm.functions.Function0;
 import moe.ono.R;

@@ -4,13 +4,16 @@ import de.robv.android.xposed.XC_MethodHook
 import moe.ono.hooks._base.ApiHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks.item.chat.HoldRevokeMessageCore
+import moe.ono.hooks.item.chat.SelfMessageReactor
 import moe.ono.hooks.item.entertainment.BlockBadlanguage
 import moe.ono.hooks.item.entertainment.DoNotBrushMeOff
 import moe.ono.reflex.ClassUtils
 import moe.ono.reflex.MethodUtils
 import moe.ono.util.Logger
+import moe.ono.util.QAppUtils
 import top.artmoe.inao.entries.InfoSyncPushOuterClass
 import top.artmoe.inao.entries.MsgPushOuterClass
+import top.artmoe.inao.entries.QQMessageOuterClass
 
 @HookItem(path = "API/监听MsfPush")
 class QQOnMsfPush : ApiHookItem() {
@@ -77,6 +80,12 @@ class QQOnMsfPush : ApiHookItem() {
             82, 166 -> {
                 BlockBadlanguage().filter(param)
                 DoNotBrushMeOff().filter(param)
+
+                if (msgType == 82) {
+                    if (msgPush.qqMessage.messageHead.senderPeerId == QAppUtils.getCurrentUin().toLong()) {
+                        SelfMessageReactor().react(msgPush.qqMessage.messageHead.senderInfo.peerId, msgPush.qqMessage.messageContentInfo.msgSeq.toLong())
+                    }
+                }
             }
 
             732 -> when (msgSubType) {

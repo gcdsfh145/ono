@@ -40,6 +40,7 @@ import moe.ono.activity.BiliLoginActivity;
 import moe.ono.config.ConfigManager;
 import moe.ono.config.ONOConf;
 import moe.ono.hooks._base.BaseClickableFunctionHookItem;
+import moe.ono.hooks.item.chat.SelfMessageReactor;
 import moe.ono.hooks.item.chat.StickerPanelEntry;
 import moe.ono.hooks.item.sigma.QQMessageTracker;
 import moe.ono.hooks.item.sigma.QQSurnamePredictor;
@@ -324,6 +325,67 @@ public class ClickableFunctionDialog {
             }
         });
 
+
+
+        builder.show();
+    }
+
+    public static void showCFGDialogSelfMessageReactor(BaseClickableFunctionHookItem item, Context context){
+        if (context == null) return;
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+        builder.setTitle("自我回应");
+
+        LinearLayout layout = new LinearLayout(context);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(16, 16, 16, 16);
+
+        final MaterialCheckBox checkBox = new MaterialCheckBox(context);
+        checkBox.setText("启用");
+
+        final TextView textView = new TextView(context);
+        final EditText input = new EditText(context);
+        input.setHint("355");
+        input.setText(String.valueOf(ConfigManager.dGetInt(PrekCfgXXX + item.getPath(), 300)));
+        textView.setText("表情 ID（faceIndex）");
+        layout.addView(checkBox);
+        layout.addView(textView);
+        layout.addView(input);
+
+        builder.setView(layout);
+
+        final TextView warningText = new TextView(context);
+        layout.addView(warningText);
+
+        builder.setNegativeButton("关闭", (dialog, which) -> dialog.cancel());
+
+        checkBox.setChecked(item.isEnabled());
+
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            ConfigManager.dPutBoolean(PrekClickableXXX + getItem(SelfMessageReactor.class).getPath(), isChecked);
+            item.setEnabled(isChecked);
+            if (isChecked) {
+                item.startLoad();
+            }
+        });
+
+        input.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                try {
+                    ConfigManager.dPutInt(PrekCfgXXX + getItem(SelfMessageReactor.class).getPath(), Integer.parseInt(s.toString()));
+                    warningText.setText("");
+                } catch (NumberFormatException e) {
+                    warningText.setText("输入错误");
+                }
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
 
 
         builder.show();

@@ -3,8 +3,6 @@ package moe.ono.hooks.item.developer
 import android.annotation.SuppressLint
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
 import moe.ono.R
 import moe.ono.bridge.ntapi.ChatTypeConstants.C2C
 import moe.ono.bridge.ntapi.ChatTypeConstants.GROUP
@@ -12,14 +10,10 @@ import moe.ono.bridge.ntapi.MsgServiceHelper
 import moe.ono.config.CacheConfig.setMsgRecord
 import moe.ono.hooks._base.BaseSwitchFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
-import moe.ono.hooks._core.factory.HookItemFactory.getItem
 import moe.ono.hooks.base.util.Toasts
 import moe.ono.hooks.dispatcher.OnMenuBuilder
-import moe.ono.hooks.protocol.encodeMessage
-import moe.ono.hooks.protocol.parseJsonToMap
 import moe.ono.hooks.protocol.sendPacket
 import moe.ono.reflex.Reflex
-import moe.ono.service.QQInterfaces
 import moe.ono.util.AppRuntimeHelper
 import moe.ono.util.ContextUtils
 import moe.ono.util.CustomMenu

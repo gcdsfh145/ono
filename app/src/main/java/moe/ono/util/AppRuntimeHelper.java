@@ -2,13 +2,12 @@ package moe.ono.util;
 
 import androidx.annotation.Nullable;
 
-import moe.ono.reflex.Reflex;
-
 import org.jetbrains.annotations.Contract;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import moe.ono.reflex.Reflex;
 import mqq.app.AppRuntime;
 import mqq.app.MobileQQ;
 

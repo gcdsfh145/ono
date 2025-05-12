@@ -24,9 +24,10 @@ package moe.ono.bridge.ntapi;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import moe.ono.reflex.Reflex;
 import moe.ono.util.Initiator;
 import moe.ono.bridge.kernelcompat.KernelMsgServiceCompat;
-import moe.ono.reflex.Reflex;
+
 import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
 import java.lang.reflect.Method;
 import mqq.app.AppRuntime;

@@ -3,8 +3,6 @@ package moe.ono.bridge;
 import static moe.ono.util.Initiator.load;
 import static moe.ono.util.Initiator.loadClass;
 
-import android.util.Log;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;

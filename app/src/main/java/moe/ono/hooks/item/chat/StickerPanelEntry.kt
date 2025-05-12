@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.text.TextUtils
 import android.view.View
 import android.widget.ImageView
-import com.tencent.qqnt.kernel.nativeinterface.MsgElement
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import de.robv.android.xposed.XposedHelpers
 import moe.ono.R
@@ -12,7 +11,6 @@ import moe.ono.bridge.ntapi.MsgServiceHelper
 import moe.ono.config.CacheConfig.getRKeyGroup
 import moe.ono.config.CacheConfig.getRKeyPrivate
 import moe.ono.config.ConfigManager
-import moe.ono.config.ONOConf
 import moe.ono.constants.Constants
 import moe.ono.creator.stickerPanel.Env
 import moe.ono.creator.stickerPanel.ICreator
@@ -84,29 +82,6 @@ class StickerPanelEntry : BaseClickableFunctionHookItem(), OnMenuBuilder {
     override fun load(classLoader: ClassLoader) {
         hookEmoBtn()
 //        createStickerPanelIcon()
-
-        val sendMsgMethod = XMethod
-            .clz("com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService\$CppProxy")
-            .name("sendMsg")
-            .ignoreParam().get()
-
-        hookBefore(sendMsgMethod) { param ->
-            val elements = param.args[2] as ArrayList<MsgElement>
-            if (ONOConf.getBoolean("global", "sticker_panel_set_ch_change_title", false)) {
-                val text: String =
-                    ONOConf.getString("global", "sticker_panel_set_ed_change_title", "")
-                if (!TextUtils.isEmpty(text)) {
-                    for (element in elements) {
-                        if (element.picElement != null) {
-                            val picElement = element.picElement
-                            picElement.summary = text
-                        }
-                    }
-                }
-            }
-
-        }
-
 
     }
 

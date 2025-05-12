@@ -4,6 +4,7 @@ import com.github.kyuubiran.ezxhelper.utils.findAllMethods
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import moe.ono.constants.Constants
 import moe.ono.dexkit.TargetManager.requireClazz
+import moe.ono.reflex.Reflex
 import moe.ono.util.HostInfo.requireMinQQVersion
 import moe.ono.util.HostInfo.requireMinTimVersion
 import net.bytebuddy.ByteBuddy

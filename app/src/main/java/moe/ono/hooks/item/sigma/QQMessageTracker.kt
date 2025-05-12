@@ -1,16 +1,10 @@
 package moe.ono.hooks.item.sigma
 
-import android.text.TextUtils
 import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import moe.ono.R
 import moe.ono.bridge.ntapi.MsgServiceHelper
-import moe.ono.config.CacheConfig.getRKeyGroup
-import moe.ono.config.CacheConfig.getRKeyPrivate
 import moe.ono.creator.QQMessageTrackerResultDialog
-import moe.ono.creator.stickerPanel.Env
-import moe.ono.creator.stickerPanel.PanelUtils
 import moe.ono.hooks._base.BaseClickableFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks._core.factory.HookItemFactory.getItem
@@ -23,7 +17,6 @@ import moe.ono.util.CustomMenu
 import moe.ono.util.Logger
 import moe.ono.util.Session
 import moe.ono.util.SyncUtils
-import java.util.Locale
 
 @HookItem(
     path = "Sigma/已读追踪",

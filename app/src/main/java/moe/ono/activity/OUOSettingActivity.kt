@@ -56,6 +56,8 @@ import rikka.material.preference.MaterialSwitchPreference
 import rikka.preference.SimpleMenuPreference
 import java.lang.Integer.max
 import androidx.core.graphics.drawable.toDrawable
+import moe.ono.creator.center.ClickableFunctionDialog.showCFGDialogSelfMessageReactor
+import moe.ono.hooks.item.chat.SelfMessageReactor
 
 open class OUOSettingActivity : BaseActivity() {
     private var mAppBarLayoutHeight: Int = 0
@@ -420,6 +422,9 @@ open class OUOSettingActivity : BaseActivity() {
                     }
                     getItem(QQMessageTracker::class.java).path -> {
                         showCFGDialogQQMessageTracker(item, requireContext())
+                    }
+                    getItem(SelfMessageReactor::class.java).path -> {
+                        showCFGDialogSelfMessageReactor(item, requireContext())
                     }
                 }
             }

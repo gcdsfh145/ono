@@ -31,7 +31,6 @@ public class FaultyDialog {
     public static void show(@NonNull Context ctx, @Nullable String title, @NonNull Throwable e, boolean cancelable) {
         Logger.e(e);
         String t = TextUtils.isEmpty(title) ? Reflex.getShortClassName(e) : title;
-        assert t != null;
         SyncUtils.runOnUiThread(() -> showImpl(ctx, t, e, cancelable));
     }
 
