@@ -6,12 +6,17 @@ import static moe.ono.hooks._core.factory.HookItemFactory.getItem;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
+import android.text.method.DigitsKeyListener;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -19,10 +24,13 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.lxj.xpopup.core.PositionPopupView;
 
 import org.json.JSONException;
@@ -33,7 +41,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import moe.ono.R;
 import moe.ono.activity.BiliLoginActivity;
@@ -330,64 +341,96 @@ public class ClickableFunctionDialog {
         builder.show();
     }
 
-    public static void showCFGDialogSelfMessageReactor(BaseClickableFunctionHookItem item, Context context){
+    public static void showCFGDialogSelfMessageReactor(BaseClickableFunctionHookItem item,
+                                                       Context context) {
+
         if (context == null) return;
+
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setTitle("自我回应");
 
-        LinearLayout layout = new LinearLayout(context);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(16, 16, 16, 16);
+        LinearLayout root = new LinearLayout(context);
+        root.setOrientation(LinearLayout.VERTICAL);
+        int pad = (int) (16 * context.getResources().getDisplayMetrics().density);
+        root.setPadding(pad, pad, pad, pad);
 
-        final MaterialCheckBox checkBox = new MaterialCheckBox(context);
+        MaterialCheckBox checkBox = new MaterialCheckBox(context);
         checkBox.setText("启用");
-
-        final TextView textView = new TextView(context);
-        final EditText input = new EditText(context);
-        input.setHint("355");
-        input.setText(String.valueOf(ConfigManager.dGetInt(PrekCfgXXX + item.getPath(), 300)));
-        textView.setText("表情 ID（faceIndex）");
-        layout.addView(checkBox);
-        layout.addView(textView);
-        layout.addView(input);
-
-        builder.setView(layout);
-
-        final TextView warningText = new TextView(context);
-        layout.addView(warningText);
-
-        builder.setNegativeButton("关闭", (dialog, which) -> dialog.cancel());
-
         checkBox.setChecked(item.isEnabled());
+        root.addView(checkBox);
 
-        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            ConfigManager.dPutBoolean(PrekClickableXXX + getItem(SelfMessageReactor.class).getPath(), isChecked);
-            item.setEnabled(isChecked);
-            if (isChecked) {
-                item.startLoad();
-            }
-        });
+        TextInputLayout til = new TextInputLayout(context);
+        til.setHint("表情 ID（逗号分隔） 例：355,66");
+        til.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        input.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        TextInputEditText etInput = new TextInputEditText(context);
+        etInput.setInputType(InputType.TYPE_CLASS_NUMBER);
+        etInput.setKeyListener(DigitsKeyListener.getInstance("0123456789,"));
+        etInput.setText(ConfigManager.dGetString(
+                PrekCfgXXX + item.getPath(), "355"));
+        til.addView(etInput);
+        root.addView(til);
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                try {
-                    ConfigManager.dPutInt(PrekCfgXXX + getItem(SelfMessageReactor.class).getPath(), Integer.parseInt(s.toString()));
-                    warningText.setText("");
-                } catch (NumberFormatException e) {
-                    warningText.setText("输入错误");
+        builder.setView(root);
+
+        builder.setNegativeButton("关闭", (d, w) -> d.cancel());
+        builder.setPositiveButton("确定", null);   // 手动处理点击
+
+        final Pattern pattern = Pattern.compile("^\\d+(,\\d+)*$");
+
+        AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(dlg -> {
+
+            Button btnOk = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+            btnOk.setEnabled(false);
+
+            checkBox.setOnCheckedChangeListener((v, isChecked) -> {
+                item.setEnabled(isChecked);
+                ConfigManager.dPutBoolean(
+                        PrekClickableXXX + item.getPath(), isChecked);
+
+                if (isChecked) item.startLoad();
+            });
+
+            TextWatcher watcher = new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
+                @Override public void afterTextChanged(Editable s) {}
+                @Override
+                public void onTextChanged(CharSequence s, int st, int b, int c) {
+                    String v = s.toString().trim();
+                    if (pattern.matcher(v).matches()) {
+                        til.setError(null);
+                        btnOk.setEnabled(true);
+                    } else {
+                        til.setError("格式错误：只能是数字和逗号，例如 355,66");
+                        btnOk.setEnabled(false);
+                    }
+                }
+            };
+            etInput.addTextChangedListener(watcher);
+
+            btnOk.setOnClickListener(v -> {
+                String value = etInput.getText() != null
+                        ? etInput.getText().toString().trim()
+                        : "";
+
+                if (!pattern.matcher(value).matches()) {
+                    til.setError("格式错误：只能是数字和逗号，例如 355,66");
+                    return;
                 }
 
-            }
+                ConfigManager.dPutString(
+                        PrekCfgXXX + item.getPath(), value);
 
-            @Override
-            public void afterTextChanged(Editable s) {}
+                dialog.dismiss();
+            });
+
+            etInput.post(() -> watcher.onTextChanged(
+                    etInput.getText(), 0, 0, 0));
         });
 
-
-        builder.show();
+        dialog.show();
     }
 }
