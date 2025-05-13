@@ -10,6 +10,7 @@ import moe.ono.bridge.ntapi.MsgServiceHelper
 import moe.ono.config.CacheConfig.setMsgRecord
 import moe.ono.hooks._base.BaseSwitchFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
+import moe.ono.hooks._core.factory.HookItemFactory.getItem
 import moe.ono.hooks.base.util.Toasts
 import moe.ono.hooks.dispatcher.OnMenuBuilder
 import moe.ono.hooks.protocol.sendPacket
@@ -27,6 +28,10 @@ class QQMessageFetcher : BaseSwitchFunctionHookItem(), OnMenuBuilder {
     override fun load(classLoader: ClassLoader) {}
 
     override fun onGetMenu(aioMsgItem: Any, targetType: String, param: MethodHookParam) {
+        if (!getItem(this.javaClass).isEnabled) {
+            return
+        }
+
         val item: Any = CustomMenu.createItemIconNt(
             aioMsgItem,
             "拉取",
