@@ -13,6 +13,7 @@ import moe.ono.core.NativeCoreBridge;
 import moe.ono.core.QLauncher;
 import moe.ono.hookimpl.InMemoryClassLoaderHelper;
 import moe.ono.hookimpl.LibXposedNewApiByteCodeGenerator;
+import moe.ono.service.QQInterfaces;
 import moe.ono.service.inject.ServletPool;
 import moe.ono.util.Initiator;
 import moe.ono.util.Logger;
@@ -45,6 +46,7 @@ public class StartupRoutine {
         LibXposedNewApiByteCodeGenerator.init();
         NativeCoreBridge.initNativeCore();
         ServletPool.INSTANCE.injectServlet();
+        QQInterfaces.Companion.update();
 
         // ------------------------------------------
 

@@ -37,7 +37,6 @@ abstract class QQInterfaces {
         }
 
         private fun getReceiveAndRemove(seq: Int): FromServiceMsg? {
-            Logger.d("map::"+seqReceiveMap.toString())
             if (seqReceiveMap.containsKey(seq)) {
                 val fromServiceMsg = seqReceiveMap[seq]
                 seqReceiveMap.remove(seq)
@@ -70,6 +69,8 @@ abstract class QQInterfaces {
             sendToServiceMsg(toServiceMsg)
         }
 
+
+        // FIXME: 部分情况下发包失败 ，但无法精准复现
         fun sendOidbSvcTrpcTcp(
             cmd: String,
             flag: Int,
