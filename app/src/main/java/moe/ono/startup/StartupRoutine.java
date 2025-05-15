@@ -45,8 +45,6 @@ public class StartupRoutine {
         StartupInfo.getLoaderService().setClassLoaderHelper(InMemoryClassLoaderHelper.INSTANCE);
         LibXposedNewApiByteCodeGenerator.init();
         NativeCoreBridge.initNativeCore();
-        ServletPool.INSTANCE.injectServlet();
-        QQInterfaces.Companion.update();
 
         // ------------------------------------------
 

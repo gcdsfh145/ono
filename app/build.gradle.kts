@@ -209,4 +209,6 @@ dependencies {
     implementation(libs.blurview)
 
     implementation(libs.hutool.core)
+
+    implementation(libs.nanohttpd)
 }

@@ -26,7 +26,7 @@ class MenuBuilderHook : ApiHookItem() {
             Modifier.isAbstract(it.modifiers) && it.returnType == MutableList::class.java && it.parameterTypes.isEmpty()
         }.name
         for (target in decorators.flatMap { it.targetTypes.asIterable() }.toMutableSet()) {
-            Logger.d("target: $target")
+//            Logger.d("target: $target")
             try {
                 hookAfter(classLoader.loadClass(target).getDeclaredMethod(getListMethodName)) { param ->
                     val getMsgMethod = baseClass.getDeclaredMethod(getMsgMethodName).apply { isAccessible = true }

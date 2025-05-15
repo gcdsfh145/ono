@@ -32,6 +32,8 @@ import moe.ono.fix.huawei.HuaweiResThemeMgrFix;
 import moe.ono.hooks._core.HookItemLoader;
 import moe.ono.lifecycle.Parasitics;
 import moe.ono.service.PlatformUtils;
+import moe.ono.service.QQInterfaces;
+import moe.ono.service.inject.ServletPool;
 import moe.ono.startup.StartupInfo;
 import moe.ono.util.AppRuntimeHelper;
 import moe.ono.util.Initiator;
@@ -138,6 +140,8 @@ public class QLauncher {
                 Parasitics.injectModuleResources(ctx.getResources());
                 Parasitics.injectModuleResources(CacheConfig.getSplashActivity().getResources());
                 Parasitics.initForStubActivity(ctx);
+                ServletPool.INSTANCE.injectServlet();
+                QQInterfaces.Companion.update();
             });
         }
     }

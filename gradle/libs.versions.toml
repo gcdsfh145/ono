@@ -26,6 +26,7 @@ kotlin = "2.0.10"
 coreKtx = "1.13.1"
 mmkv = "2.0.1"
 multidexVersion = "2.0.1"
+nanohttpd = "2.3.1"
 protobufJava = "4.28.2"
 renderscript = "1.2.0-alpha01"
 serializationVersion = "1.7.3"
@@ -78,6 +79,7 @@ activity = { group = "androidx.activity", name = "activity", version.ref = "acti
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv" }
 multidex = { module = "androidx.multidex:multidex", version.ref = "multidexVersion" }
+nanohttpd = { module = "org.nanohttpd:nanohttpd", version.ref = "nanohttpd" }
 ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 ezXHelper = { module = "com.github.kyuubiran:EzXHelper", version = "1.0.3" }
 xposed = { module = "de.robv.android.xposed:api", version = "82" }
