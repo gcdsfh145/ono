@@ -26,7 +26,7 @@ import kotlin.random.nextUInt
  * and sending it via QQInterfaces.
  *
  * @param content    JSON string (the “element” block or other types later)
- * @param id         QQ-uin / Group-uin
+ * @param id         QQ-uid / Group-uin
  * @param isGroupMsg true if group message
  * @param type       currently only `"element"`
  */
@@ -76,7 +76,6 @@ fun sendMessage(
             else -> throw IllegalArgumentException("Unsupported type '$type'")
         }
 
-        /* ── random cookies ── */
         pbJson = buildJsonObject {
             pbJson.forEach { (k, v) -> put(k, v) }
             put("4", JsonPrimitive(Random.nextUInt()))
