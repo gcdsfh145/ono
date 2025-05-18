@@ -2,10 +2,10 @@ package moe.ono.hooks.item.developer
 
 import android.annotation.SuppressLint
 import de.robv.android.xposed.XposedHelpers
+import moe.ono.ext.toHex
 import moe.ono.hooks._base.BaseSwitchFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
-import moe.ono.hostInfo
-import moe.ono.service.PlatformUtils.getQQVersion
+import moe.ono.service.PlatformUtils.getQUA
 import moe.ono.service.http.HttpServer
 import moe.ono.util.Initiator.loadClass
 import moe.ono.util.Logger
@@ -35,7 +35,7 @@ class QSignHook : BaseSwitchFunctionHookItem() {
                 val qsecObj = XposedHelpers.newInstance(qsecClass)
                 val instance = XposedHelpers.callStaticMethod(signClass, "getInstance")
 
-                val qua = "V1_AND_SQ_${getQQVersion(hostInfo.application)}_${hostInfo.versionCode}_YYB_D"
+                val qua = getQUA()
                 Logger.d("callGetSign: $cmd, $buffer, $seq, $uin, $qua")
                 val resultObj = XposedHelpers.callMethod(
                     instance, "getSign",
@@ -86,8 +86,6 @@ class QSignHook : BaseSwitchFunctionHookItem() {
             lastResult["latest"] = json.toString()
         }
     }
-
-    fun ByteArray.toHex(): String = joinToString("") { "%02x".format(it.toInt() and 0xFF) }
 
     override fun targetProcess(): Int {
         return SyncUtils.PROC_MSF

@@ -1,6 +1,9 @@
 package moe.ono.service.http
 
 import fi.iki.elonen.NanoHTTPD
+import moe.ono.ext.decToSeqBytes
+import moe.ono.ext.hexToBytes
+import moe.ono.ext.toHex
 import moe.ono.hooks.item.developer.QSignHook
 import org.json.JSONObject
 
@@ -89,15 +92,4 @@ object HttpServer : NanoHTTPD(7300) {
 
     private fun badRequest(msg: String) =
         newFixedLengthResponse(Response.Status.BAD_REQUEST, "text/plain", msg)
-}
-
-fun ByteArray.toHex(): String =
-    joinToString("") { "%02x".format(it.toInt() and 0xFF) }
-
-fun String.hexToBytes(): ByteArray =
-    chunked(2).map { it.toInt(16).toByte() }.toByteArray()
-
-fun String.decToSeqBytes(): ByteArray {
-    val hex = this.toLong().toString(16).let { if (it.length % 2 == 1) "0$it" else it }
-    return hex.hexToBytes()
 }
