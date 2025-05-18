@@ -73,7 +73,7 @@ public abstract class BaseHookItem {
             isLoad = true;
             initOnce();
             if (initOnce()) {
-                load(HybridClassLoader.getHostClassLoader());
+                entry(HybridClassLoader.getHostClassLoader());
             }
         } catch (Throwable e) {
             XposedBridge.log(e);
@@ -89,7 +89,7 @@ public abstract class BaseHookItem {
         return true;
     }
 
-    public abstract void load(@NonNull ClassLoader classLoader) throws Throwable;
+    public abstract void entry(@NonNull ClassLoader classLoader) throws Throwable;
 
     /**
      * 标准hook方法执行前

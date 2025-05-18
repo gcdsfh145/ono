@@ -63,7 +63,7 @@ public class QQUpdateSession extends ApiHookItem {
     }
 
     @Override
-    public void load(@NonNull ClassLoader classLoader) throws Throwable {
+    public void entry(@NonNull ClassLoader classLoader) throws Throwable {
         update(classLoader);
     }
 }

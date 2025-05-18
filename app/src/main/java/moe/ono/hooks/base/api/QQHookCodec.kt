@@ -12,7 +12,7 @@ import moe.ono.util.SyncUtils
 
 @HookItem(path = "API/注入 CodecWarpper", description = "用于捕获请求，如 MessageSvc.PbSendMsg")
 class QQHookCodec : ApiHookItem() {
-    override fun load(classLoader: ClassLoader) {
+    override fun entry(classLoader: ClassLoader) {
         val codecWarpper = Initiator.load("com.tencent.qphone.base.util.CodecWarpper")
         if (codecWarpper == null) {
             Logger.e("[QQHookCodec] CodecWarpper cannot be injected")

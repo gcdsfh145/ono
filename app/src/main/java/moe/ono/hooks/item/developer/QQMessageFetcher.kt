@@ -25,7 +25,7 @@ import moe.ono.util.SyncUtils
 @SuppressLint("DiscouragedApi")
 @HookItem(path = "开发者选项/Element(s) 反序列化", description = "长按消息点击“拉取”进行反序列化操作")
 class QQMessageFetcher : BaseSwitchFunctionHookItem(), OnMenuBuilder {
-    override fun load(classLoader: ClassLoader) {}
+    override fun entry(classLoader: ClassLoader) {}
 
     override fun onGetMenu(aioMsgItem: Any, targetType: String, param: MethodHookParam) {
         if (!getItem(this.javaClass).isEnabled) {

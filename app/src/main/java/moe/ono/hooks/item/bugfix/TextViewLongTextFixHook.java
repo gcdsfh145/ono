@@ -16,7 +16,7 @@ import moe.ono.hooks._core.annotation.HookItem;
 @HookItem(path = "优化与修复/拦截卡屏文字", description = "非必要不建议开启")
 public class TextViewLongTextFixHook extends BaseSwitchFunctionHookItem {
     @Override
-    public void load(@NonNull ClassLoader classLoader) throws Throwable {
+    public void entry(@NonNull ClassLoader classLoader) throws Throwable {
         XC_MethodHook hodorHodor = new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {

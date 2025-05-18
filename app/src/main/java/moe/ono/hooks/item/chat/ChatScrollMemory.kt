@@ -26,7 +26,7 @@ import java.lang.reflect.Method
 @SuppressLint("DiscouragedApi")
 @HookItem(path = "聊天与消息/记住上次查看位置", description = "浏览聊天记录时若上次查看位置与当前位置相差过大会有灰字提示")
 class ChatScrollMemory : BaseSwitchFunctionHookItem() {
-    override fun load(classLoader: ClassLoader) {}
+    override fun entry(classLoader: ClassLoader) {}
 
     companion object {
         @JvmStatic

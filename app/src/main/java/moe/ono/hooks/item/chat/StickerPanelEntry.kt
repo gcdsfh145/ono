@@ -79,7 +79,7 @@ class StickerPanelEntry : BaseClickableFunctionHookItem(), OnMenuBuilder {
         }
     }
 
-    override fun load(classLoader: ClassLoader) {
+    override fun entry(classLoader: ClassLoader) {
         hookEmoBtn()
 //        createStickerPanelIcon()
 

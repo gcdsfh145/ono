@@ -46,7 +46,7 @@ public class Toasts extends ApiHookItem {
     }
 
     @Override
-    public void load(@NonNull ClassLoader classLoader) throws Throwable {
+    public void entry(@NonNull ClassLoader classLoader) throws Throwable {
         try {
             Class<?> QQToastUtilClass = loadClass("com.tencent.util.QQToastUtil");
             showQQToastInUiThreadMethod = QQToastUtilClass.getDeclaredMethod("showQQToastInUiThread", int.class, String.class);

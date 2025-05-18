@@ -13,7 +13,7 @@ import moe.ono.util.Logger
 @SuppressLint("DiscouragedApi")
 @HookItem(path = "聊天与消息/自我回应", description = "点击配置表情 ID")
 class SelfMessageReactor : BaseClickableFunctionHookItem() {
-    override fun load(classLoader: ClassLoader) {}
+    override fun entry(classLoader: ClassLoader) {}
 
     private fun parseFaceList(cfg: String?, defaultFace: Int = 355): List<Int> {
         return cfg

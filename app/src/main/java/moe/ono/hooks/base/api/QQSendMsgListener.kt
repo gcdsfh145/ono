@@ -9,7 +9,7 @@ import moe.ono.reflex.XMethod
 
 @HookItem(path = "API/发送消息监听")
 class QQSendMsgListener : ApiHookItem() {
-    override fun load(classLoader: ClassLoader) {
+    override fun entry(classLoader: ClassLoader) {
         val sendMsgMethod = XMethod
             .clz("com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService\$CppProxy")
             .name("sendMsg")

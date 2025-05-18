@@ -218,7 +218,7 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
     }
 
     @Throws(Throwable::class)
-    override fun load(classLoader: ClassLoader) {
+    override fun entry(classLoader: ClassLoader) {
         try {
             val clazz = Initiator.loadClass(Constants.CLAZZ_ACTIVITY_SPLASH)
             XposedHelpers.findAndHookMethod(clazz, "doOnCreate", Bundle::class.java,

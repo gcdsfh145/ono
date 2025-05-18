@@ -205,7 +205,7 @@ class QQMsgRespHandler : ApiHookItem() {
 
 
     @Throws(Throwable::class)
-    override fun load(classLoader: ClassLoader) {
+    override fun entry(classLoader: ClassLoader) {
         update()
     }
 }

@@ -17,7 +17,7 @@ class MenuBuilderHook : ApiHookItem() {
         QQMessageFetcher(),
     )
 
-    override fun load(classLoader: ClassLoader) {
+    override fun entry(classLoader: ClassLoader) {
         val baseClass = classLoader.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent")
         val getMsgMethodName = baseClass.declaredMethods.first {
             it.returnType == classLoader.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem") && it.parameterTypes.isEmpty()

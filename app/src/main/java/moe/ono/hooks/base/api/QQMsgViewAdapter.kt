@@ -54,7 +54,7 @@ class QQMsgViewAdapter : ApiHookItem() {
         )
     }
 
-    override fun load(loader: ClassLoader) {
+    override fun entry(loader: ClassLoader) {
         if (findContentViewId() > 0) {
             contentViewId = findContentViewId()
             return

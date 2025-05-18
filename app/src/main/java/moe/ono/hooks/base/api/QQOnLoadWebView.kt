@@ -17,7 +17,7 @@ import java.util.regex.Pattern
 @HookItem(path = "API/OnWebViewLoad")
 class QQOnLoadWebView : ApiHookItem() {
     @Throws(Throwable::class)
-    override fun load(classLoader: ClassLoader) {
+    override fun entry(classLoader: ClassLoader) {
         val mLoadUrl: Method = findMethodExact(
             "com.tencent.qimei.webview.QmX5Webview".clazz,
             "loadUrl",

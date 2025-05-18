@@ -61,7 +61,7 @@ class ProfileCardMenu : BaseSwitchFunctionHookItem() {
     }
 
     @Throws(Throwable::class)
-    override fun load(classLoader: ClassLoader) {
+    override fun entry(classLoader: ClassLoader) {
         try {
             val clazz =
                 Initiator.loadClass("com.tencent.mobileqq.profilecard.activity.FriendProfileCardActivity")

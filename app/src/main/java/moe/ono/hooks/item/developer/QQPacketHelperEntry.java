@@ -41,7 +41,7 @@ public class QQPacketHelperEntry extends BaseSwitchFunctionHookItem {
 
 
     @Override
-    public void load(@NonNull ClassLoader classLoader) {
+    public void entry(@NonNull ClassLoader classLoader) {
         hook();
     }
 

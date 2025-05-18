@@ -57,7 +57,7 @@ class HoldRevokeMsg : BaseSwitchFunctionHookItem() {
     private val constraintSetClz by lazy { "androidx.constraintlayout.widget.ConstraintSet".clazz!! }
     private val constraintLayoutClz by lazy { "androidx.constraintlayout.widget.ConstraintLayout".clazz!! }
 
-    override fun load(classLoader: ClassLoader) {
+    override fun entry(classLoader: ClassLoader) {
         readData()
         hookAIOMsgUpdate()
     }

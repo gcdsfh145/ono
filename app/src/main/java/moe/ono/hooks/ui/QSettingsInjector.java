@@ -158,7 +158,7 @@ public class QSettingsInjector extends ApiHookItem {
 
 
     @Override
-    public void load(@NonNull ClassLoader classLoader) throws Throwable {
+    public void entry(@NonNull ClassLoader classLoader) throws Throwable {
         if (CacheConfig.isSetEntry()){
             return;
         }

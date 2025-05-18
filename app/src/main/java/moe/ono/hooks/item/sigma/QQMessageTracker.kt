@@ -24,7 +24,7 @@ import moe.ono.util.SyncUtils
 )
 class QQMessageTracker : BaseClickableFunctionHookItem(), OnMenuBuilder {
     @Throws(Throwable::class)
-    override fun load(classLoader: ClassLoader) {
+    override fun entry(classLoader: ClassLoader) {
     }
 
     data class AppData(

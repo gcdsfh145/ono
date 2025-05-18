@@ -137,7 +137,7 @@ public class QQCrashFixer extends BaseSwitchFunctionHookItem {
     }
 
     @Override
-    public void load(@NonNull ClassLoader classLoader) throws Throwable {
+    public void entry(@NonNull ClassLoader classLoader) throws Throwable {
         fix(classLoader);
     }
 }

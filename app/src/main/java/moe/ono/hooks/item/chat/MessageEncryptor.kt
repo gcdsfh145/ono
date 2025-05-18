@@ -29,7 +29,7 @@ import moe.ono.util.SyncUtils
 @SuppressLint("DiscouragedApi")
 @HookItem(path = "聊天与消息/群聊加密消息", description = "发送的消息将加密抄送，仅针对群聊\n开启此功能需要重启生效。\n* 禁止用于非法用途，违者后果自负")
 class MessageEncryptor : BaseClickableFunctionHookItem() {
-    override fun load(classLoader: ClassLoader) {
+    override fun entry(classLoader: ClassLoader) {
         QQHookCodec.hijackers.add(object: IHijacker {
             override fun onHandle(
                 param: XC_MethodHook.MethodHookParam,

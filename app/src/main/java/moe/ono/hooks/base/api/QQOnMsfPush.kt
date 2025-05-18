@@ -17,7 +17,7 @@ import top.artmoe.inao.entries.QQMessageOuterClass
 
 @HookItem(path = "API/监听MsfPush")
 class QQOnMsfPush : ApiHookItem() {
-    override fun load(classLoader: ClassLoader) {
+    override fun entry(classLoader: ClassLoader) {
         val onMSFPushMethod = MethodUtils.create("com.tencent.qqnt.kernel.nativeinterface.IQQNTWrapperSession\$CppProxy")
             .params(
                 String::class.java,

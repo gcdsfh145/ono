@@ -22,7 +22,7 @@ import java.lang.reflect.Method
 @HookItem(path = "聊天与消息/气泡重定向", description = "重定向后的气泡对 iOS 设备无效\n开启后去商城任意找一个气泡点击应用即可\n* 重启生效")
 class QQBubbleRedirect : BaseSwitchFunctionHookItem() {
     @Throws(Throwable::class)
-    override fun load(classLoader: ClassLoader) {
+    override fun entry(classLoader: ClassLoader) {
         try {
             val mI: Method = findMethodExact("com.tencent.mobileqq.bubble.BubbleManager".clazz,
                 "I", String::class.java)

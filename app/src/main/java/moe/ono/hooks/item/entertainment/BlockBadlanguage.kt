@@ -11,7 +11,7 @@ import top.artmoe.inao.entries.MsgPushOuterClass
 @SuppressLint("DiscouragedApi")
 @HookItem(path = "娱乐功能/反弹", description = "替换不文明词汇的主语\n* 通过拦截MsgPush实现，会影响本地聊天记录")
 class BlockBadlanguage : BaseSwitchFunctionHookItem() {
-    override fun load(classLoader: ClassLoader) {}
+    override fun entry(classLoader: ClassLoader) {}
 
     fun filter(param: XC_MethodHook.MethodHookParam) {
         if (!getItem(this.javaClass).isEnabled) {

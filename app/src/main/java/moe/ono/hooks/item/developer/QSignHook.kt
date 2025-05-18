@@ -55,7 +55,7 @@ class QSignHook : BaseSwitchFunctionHookItem() {
     }
 
     @SuppressLint("DiscouragedApi")
-    override fun load(classLoader: ClassLoader) {
+    override fun entry(classLoader: ClassLoader) {
         HttpServer.doStart()
 
         val signClass = loadClass("com.tencent.mobileqq.sign.QQSecuritySign")

@@ -52,7 +52,7 @@ class QQMessageViewListener : ApiHookItem() {
         }
     }
 
-    override fun load(loader: ClassLoader) {
+    override fun entry(loader: ClassLoader) {
         val onMsgViewUpdate =
             MethodUtils.create("com.tencent.mobileqq.aio.msglist.holder.AIOBubbleMsgItemVB")
                 .returnType(Void.TYPE)
