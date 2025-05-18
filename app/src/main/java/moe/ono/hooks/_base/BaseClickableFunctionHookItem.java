@@ -1,7 +1,5 @@
 package moe.ono.hooks._base;
 
-import android.view.View;
-
 import de.robv.android.xposed.XC_MethodHook;
 import moe.ono.util.SyncUtils;
 
@@ -9,6 +7,7 @@ public abstract class BaseClickableFunctionHookItem extends BaseHookItem {
 
     private boolean enabled;
     private final int targetProcess = targetProcess();
+    private final boolean alwaysRun = alwaysRun();
 
     /**
      * 目标进程
@@ -21,6 +20,15 @@ public abstract class BaseClickableFunctionHookItem extends BaseHookItem {
     public int getTargetProcess() {
         return targetProcess;
     }
+
+    public boolean alwaysRun() {
+        return false;
+    }
+
+    public boolean getAlwaysRun() {
+        return alwaysRun;
+    }
+
 
 
     public boolean isEnabled() {

@@ -31,6 +31,11 @@ class HookItemLoader {
                     Logger.i("[BaseClickableFunctionHookItem] Initializing $path...")
                     hookItem.startLoad()
                 }
+
+                if (hookItem.alwaysRun) {
+                    Logger.i("[BaseClickableFunctionHookItem-AlwaysRun] Initializing $path...")
+                    hookItem.startLoad()
+                }
             }
             else {
                 if (hookItem is ApiHookItem && process == hookItem.targetProcess){
