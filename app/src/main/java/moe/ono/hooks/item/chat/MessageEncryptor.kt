@@ -12,6 +12,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToByteArray
 import kotlinx.serialization.protobuf.ProtoBuf
 import moe.ono.config.ConfigManager
+import moe.ono.config.DailySaying
 import moe.ono.ext.getUnknownObject
 import moe.ono.ext.getUnknownObjects
 import moe.ono.ext.toInnerValuesString
@@ -132,7 +133,11 @@ class MessageEncryptor : BaseClickableFunctionHookItem() {
             builder.addField(1, UnknownFieldSet.Field.newBuilder().also { it ->
                 it.addLengthDelimited(UnknownFieldSet.newBuilder().also { textElement ->
                     textElement.addField(1, UnknownFieldSet.Field.newBuilder().also { content ->
-                        content.addLengthDelimited(ByteString.copyFromUtf8("[このメッセージは暗号化されています。🔒]\nKono messeeji wa angōka sareteimasu."))
+                        var display = ConfigManager.getStringConfig(this.javaClass, "", "display")
+                        if (display.isEmpty()) {
+                            display = DailySaying.getSaying()
+                        }
+                        content.addLengthDelimited(ByteString.copyFromUtf8(display))
                     }.build())
 
                     textElement.addField(12, UnknownFieldSet.Field.newBuilder().also { content ->

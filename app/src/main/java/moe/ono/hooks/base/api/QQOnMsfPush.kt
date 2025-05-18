@@ -1,7 +1,6 @@
 package moe.ono.hooks.base.api
 
 import com.google.protobuf.UnknownFieldSet
-import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
@@ -13,7 +12,6 @@ import moe.ono.constants.Constants
 import moe.ono.ext.getUnknownObject
 import moe.ono.ext.getUnknownObjects
 import moe.ono.hooks._base.ApiHookItem
-import moe.ono.hooks._base.BaseHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks._core.factory.HookItemFactory
 import moe.ono.hooks.item.chat.HoldRevokeMessageCore
@@ -30,7 +28,6 @@ import moe.ono.util.AesUtils
 import moe.ono.util.QAppUtils
 import top.artmoe.inao.entries.InfoSyncPushOuterClass
 import top.artmoe.inao.entries.MsgPushOuterClass
-import top.artmoe.inao.entries.QQMessageOuterClass
 
 @HookItem(path = "API/监听MsfPush")
 class QQOnMsfPush : ApiHookItem() {

@@ -493,7 +493,7 @@ object ClickableFunctionDialog {
         if (context == null) return
 
         val builder = MaterialAlertDialogBuilder(context)
-        builder.setTitle("加密消息")
+        builder.setTitle("加密消息配置")
 
         val root = LinearLayout(context)
         root.orientation = LinearLayout.VERTICAL
@@ -501,33 +501,55 @@ object ClickableFunctionDialog {
         root.setPadding(pad, pad, pad, pad)
 
         val checkBox = MaterialCheckBox(context)
-        checkBox.text = "启用"
+        checkBox.text = "启用加密"
         checkBox.isChecked = item.isEnabled
         root.addView(checkBox)
 
-        val til = TextInputLayout(context)
-        til.hint = "加密密钥（默认 ono）"
-        til.layoutParams = LinearLayout.LayoutParams(
+        val inputMarginTop = (8 * context.resources.displayMetrics.density).toInt()
+
+        val tilKey = TextInputLayout(context)
+        tilKey.hint = "加密密钥（默认 ono）"
+        val tilKeyParams = LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
 
-        val etInput = TextInputEditText(context)
-        etInput.inputType = InputType.TYPE_CLASS_TEXT
-        etInput.setText(
+        tilKey.layoutParams = tilKeyParams
+
+        val etInputKey = TextInputEditText(context)
+        etInputKey.inputType = InputType.TYPE_CLASS_TEXT
+        etInputKey.setText(
             ConfigManager.dGetString(
                 Constants.PrekCfgXXX + item.path, "ono"
             )
         )
-        til.addView(etInput)
-        root.addView(til)
+        tilKey.addView(etInputKey)
+        root.addView(tilKey)
 
+        val tilDisplay = TextInputLayout(context)
+        tilDisplay.hint = "自定义外显名称 (为空则是随机一言)"
+        val tilDisplayParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        tilDisplayParams.topMargin = inputMarginTop
+        tilDisplay.layoutParams = tilDisplayParams
+
+        val etInputDisplay = TextInputEditText(context)
+        etInputDisplay.inputType = InputType.TYPE_CLASS_TEXT
+
+        val displayConfigKey = Constants.PrekCfgXXX + item.path + "_display"
+        etInputDisplay.setText(
+            ConfigManager.dGetString(displayConfigKey, "")
+        )
+        tilDisplay.addView(etInputDisplay)
+        root.addView(tilDisplay)
         builder.setView(root)
 
         builder.setNegativeButton(
             "关闭"
         ) { d: DialogInterface, _: Int -> d.cancel() }
-        builder.setPositiveButton("确定", null) // 手动处理点击
+        builder.setPositiveButton("确定", null) // Manual handling for validation
 
         val dialog = builder.create()
         dialog.setOnShowListener {
@@ -535,60 +557,53 @@ object ClickableFunctionDialog {
             btnOk.isEnabled = false
 
             checkBox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-                item.isEnabled =
-                    isChecked
+                item.isEnabled = isChecked
                 ConfigManager.dPutBoolean(
                     Constants.PrekClickableXXX + item.path, isChecked
                 )
-                if (isChecked) item.startLoad()
+                if (isChecked) {
+                    item.startLoad()
+                } else {
+                }
             }
 
-            val watcher: TextWatcher = object : TextWatcher {
-                override fun beforeTextChanged(
-                    s: CharSequence,
-                    st: Int,
-                    c: Int,
-                    a: Int
-                ) {}
-
+            val keyWatcher: TextWatcher = object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence, st: Int, c: Int, a: Int) {}
                 override fun afterTextChanged(s: Editable) {}
-                override fun onTextChanged(
-                    s: CharSequence,
-                    st: Int,
-                    b: Int,
-                    c: Int
-                ) {
-                    val v = s.toString().trim()
-                    if (v.isNotEmpty()) {
-                        til.error = null
+                override fun onTextChanged(s: CharSequence, st: Int, b: Int, c: Int) {
+                    val keyText = s.toString().trim()
+                    if (keyText.isNotEmpty()) {
+                        tilKey.error = null
                         btnOk.isEnabled = true
                     } else {
-                        til.error = "输入不能为空"
+                        tilKey.error = "加密密钥不能为空"
                         btnOk.isEnabled = false
                     }
                 }
             }
-            etInput.addTextChangedListener(watcher)
+            etInputKey.addTextChangedListener(keyWatcher)
 
             btnOk.setOnClickListener {
-                val value = if (etInput.text != null)
-                    etInput.text.toString().trim()
-                else
-                    ""
-                if (value.isEmpty()) {
-                    til.error = "输入不能为空"
+                val keyValue = etInputKey.text?.toString()?.trim() ?: ""
+
+                if (keyValue.isEmpty()) {
+                    tilKey.error = "加密密钥不能为空"
                     return@setOnClickListener
                 }
 
                 ConfigManager.dPutString(
-                    Constants.PrekCfgXXX + item.path, value
+                    Constants.PrekCfgXXX + item.path, keyValue
                 )
+
+                val displayValue = etInputDisplay.text?.toString()?.trim() ?: ""
+                ConfigManager.dPutString(displayConfigKey, displayValue)
+
                 dialog.dismiss()
             }
 
-            etInput.post {
-                watcher.onTextChanged(
-                    etInput.text, 0, 0, 0
+            etInputKey.post {
+                keyWatcher.onTextChanged(
+                    etInputKey.text ?: "", 0, 0, 0
                 )
             }
         }

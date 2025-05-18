@@ -66,9 +66,6 @@ class QQHookCodec : ApiHookItem() {
                 else -> throw RuntimeException("[QQHookCodec] nativeEncodeRequest received incorrect number of parameters")
             }
 
-
-            Logger.d("nativeEncodeRequest $cmd")
-
             if (hijackers.firstOrNull { it.command == cmd }?.onHandle(it, uin, cmd, seq, buffer, bufferIndex) == true) {
                 it.result = EMPTY_BYTE_ARRAY
             }
