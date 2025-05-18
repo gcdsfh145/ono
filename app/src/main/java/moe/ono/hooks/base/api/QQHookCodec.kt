@@ -7,17 +7,29 @@ import moe.ono.hooks._base.ApiHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.loader.hookapi.IHijacker
 import moe.ono.util.Initiator
+import moe.ono.util.Initiator.load
 import moe.ono.util.Logger
 import moe.ono.util.SyncUtils
 
 @HookItem(path = "API/注入 CodecWarpper", description = "用于捕获请求，如 MessageSvc.PbSendMsg")
 class QQHookCodec : ApiHookItem() {
     override fun entry(classLoader: ClassLoader) {
-        val codecWarpper = Initiator.load("com.tencent.qphone.base.util.CodecWarpper")
+        val configClass = load("com.tencent.freesia.UnitedConfig")
+        configClass?.let {
+            it.hookMethod("isSwitchOn").after { param ->
+                val tag = param.args[1] as String
+                if (tag == "msf_init_optimize" || tag == "msf_network_service_switch_new") {
+                    param.result = false
+                }
+            }
+        }
+
+        val codecWarpper = load("com.tencent.qphone.base.util.CodecWarpper")
         if (codecWarpper == null) {
             Logger.e("[QQHookCodec] CodecWarpper cannot be injected")
             return
         }
+
 
         codecWarpper.hookMethod("nativeEncodeRequest", beforeHook { it ->
             val uin: String
@@ -54,6 +66,8 @@ class QQHookCodec : ApiHookItem() {
                 else -> throw RuntimeException("[QQHookCodec] nativeEncodeRequest received incorrect number of parameters")
             }
 
+
+            Logger.d("nativeEncodeRequest $cmd")
 
             if (hijackers.firstOrNull { it.command == cmd }?.onHandle(it, uin, cmd, seq, buffer, bufferIndex) == true) {
                 it.result = EMPTY_BYTE_ARRAY
