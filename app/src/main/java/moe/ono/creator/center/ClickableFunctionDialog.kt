@@ -1,436 +1,599 @@
-package moe.ono.creator.center;
+package moe.ono.creator.center
 
-import static moe.ono.constants.Constants.PrekCfgXXX;
-import static moe.ono.constants.Constants.PrekClickableXXX;
-import static moe.ono.hooks._core.factory.HookItemFactory.getItem;
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
+import android.text.Editable
+import android.text.InputType
+import android.text.TextWatcher
+import android.text.method.DigitsKeyListener
+import android.view.View
+import android.view.ViewGroup
+import android.widget.CompoundButton
+import android.widget.EditText
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.checkbox.MaterialCheckBox
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import moe.ono.activity.BiliLoginActivity
+import moe.ono.config.ConfigManager
+import moe.ono.config.ONOConf
+import moe.ono.constants.Constants
+import moe.ono.hooks._base.BaseClickableFunctionHookItem
+import moe.ono.hooks._core.factory.HookItemFactory
+import moe.ono.hooks.item.chat.StickerPanelEntry
+import moe.ono.hooks.item.sigma.QQMessageTracker
+import moe.ono.hooks.item.sigma.QQSurnamePredictor
+import moe.ono.util.Logger
+import moe.ono.util.SyncUtils
+import moe.ono.util.api.ark.ArkRequest
+import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
+import java.net.URL
+import java.util.Objects
+import java.util.regex.Pattern
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Color;
-import android.text.Editable;
-import android.text.InputType;
-import android.text.TextWatcher;
-import android.text.method.DigitsKeyListener;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
+object ClickableFunctionDialog {
+    fun showCFGDialogSurnamePredictor(item: BaseClickableFunctionHookItem, context: Context?) {
+        if (context == null) return
+        val builder = MaterialAlertDialogBuilder(context)
+        builder.setTitle("猜姓氏")
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
+        val layout = LinearLayout(context)
+        layout.orientation = LinearLayout.VERTICAL
+        layout.setPadding(16, 16, 16, 16)
 
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.checkbox.MaterialCheckBox;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
-import com.lxj.xpopup.core.PositionPopupView;
+        val checkBox = MaterialCheckBox(context)
+        checkBox.text = "启用"
 
-import org.json.JSONException;
-import org.json.JSONObject;
+        val textView = TextView(context)
+        val input = EditText(context)
+        input.hint = "300"
+        input.setText(ConfigManager.dGetInt(Constants.PrekCfgXXX + item.path, 300).toString())
+        textView.text = "操作间隔（毫秒）"
+        layout.addView(checkBox)
+        layout.addView(textView)
+        layout.addView(input)
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.regex.Pattern;
+        builder.setView(layout)
 
-import moe.ono.R;
-import moe.ono.activity.BiliLoginActivity;
-import moe.ono.config.ConfigManager;
-import moe.ono.config.ONOConf;
-import moe.ono.hooks._base.BaseClickableFunctionHookItem;
-import moe.ono.hooks.item.chat.SelfMessageReactor;
-import moe.ono.hooks.item.chat.StickerPanelEntry;
-import moe.ono.hooks.item.sigma.QQMessageTracker;
-import moe.ono.hooks.item.sigma.QQSurnamePredictor;
-import moe.ono.util.Logger;
-import moe.ono.util.SyncUtils;
-import moe.ono.util.api.ark.ArkRequest;
+        val warningText = TextView(context)
+        layout.addView(warningText)
 
-public class ClickableFunctionDialog {
-    public static void showCFGDialogSurnamePredictor(BaseClickableFunctionHookItem item, Context context){
-        if (context == null) return;
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        builder.setTitle("猜姓氏");
+        builder.setNegativeButton(
+            "关闭"
+        ) { dialog: DialogInterface, _: Int -> dialog.cancel() }
 
-        LinearLayout layout = new LinearLayout(context);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(16, 16, 16, 16);
+        checkBox.isChecked = item.isEnabled
 
-        final MaterialCheckBox checkBox = new MaterialCheckBox(context);
-        checkBox.setText("启用");
-
-        final TextView textView = new TextView(context);
-        final EditText input = new EditText(context);
-        input.setHint("300");
-        input.setText(String.valueOf(ConfigManager.dGetInt(PrekCfgXXX + item.getPath(), 300)));
-        textView.setText("操作间隔（毫秒）");
-        layout.addView(checkBox);
-        layout.addView(textView);
-        layout.addView(input);
-
-        builder.setView(layout);
-
-        final TextView warningText = new TextView(context);
-        layout.addView(warningText);
-
-        builder.setNegativeButton("关闭", (dialog, which) -> dialog.cancel());
-
-        checkBox.setChecked(item.isEnabled());
-
-        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            ConfigManager.dPutBoolean(PrekClickableXXX + getItem(QQSurnamePredictor.class).getPath(), isChecked);
-            item.setEnabled(isChecked);
+        checkBox.setOnCheckedChangeListener { buttonView: CompoundButton?, isChecked: Boolean ->
+            ConfigManager.dPutBoolean(
+                Constants.PrekClickableXXX + HookItemFactory.getItem(
+                    QQSurnamePredictor::class.java
+                ).path, isChecked
+            )
+            item.isEnabled = isChecked
             if (isChecked) {
-                item.startLoad();
+                item.startLoad()
             }
-        });
+        }
 
-        input.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        input.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 try {
-                    ConfigManager.dPutInt(PrekCfgXXX + getItem(QQSurnamePredictor.class).getPath(), Integer.parseInt(s.toString()));
-                    warningText.setText("");
-                } catch (NumberFormatException e) {
-                    warningText.setText("输入错误");
+                    ConfigManager.dPutInt(
+                        Constants.PrekCfgXXX + HookItemFactory.getItem(
+                            QQSurnamePredictor::class.java
+                        ).path, s.toString().toInt()
+                    )
+                    warningText.text = ""
+                } catch (e: NumberFormatException) {
+                    warningText.text = "输入错误"
                 }
-
             }
 
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
+            override fun afterTextChanged(s: Editable) {}
+        })
 
 
-        builder.show();
+        builder.show()
     }
 
     @SuppressLint("SetTextI18n")
-    public static void showCFGDialogQQMessageTracker(BaseClickableFunctionHookItem item, Context context){
-        if (context == null) return;
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        builder.setTitle("已读追踪");
+    fun showCFGDialogQQMessageTracker(item: BaseClickableFunctionHookItem, context: Context?) {
+        if (context == null) return
+        val builder = MaterialAlertDialogBuilder(context)
+        builder.setTitle("已读追踪")
 
-        LinearLayout layout = new LinearLayout(context);
-        ScrollView scrollView = new ScrollView(context);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        ScrollView.LayoutParams sParams = new ScrollView.LayoutParams(
-                ScrollView.LayoutParams.MATCH_PARENT,
-                ScrollView.LayoutParams.WRAP_CONTENT
-        );
+        val layout = LinearLayout(context)
+        val scrollView = ScrollView(context)
+        layout.orientation = LinearLayout.VERTICAL
+        val sParams: FrameLayout.LayoutParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        )
 
-        scrollView.setLayoutParams(sParams);
+        scrollView.layoutParams = sParams
 
-        layout.setPadding(50, 10, 50, 50);
+        layout.setPadding(50, 10, 50, 50)
 
-        final MaterialCheckBox checkBox = new MaterialCheckBox(context);
-        checkBox.setText("启用");
+        val checkBox = MaterialCheckBox(context)
+        checkBox.text = "启用"
 
-        final MaterialCheckBox checkBoxDef = new MaterialCheckBox(context);
-        checkBoxDef.setText("使用默认服务器设置");
+        val checkBoxDef = MaterialCheckBox(context)
+        checkBoxDef.text = "使用默认服务器设置"
 
-        final String i = "\n登陆信息: \n昵称: %s\nUID: %s\nArk-Coins: %s\n---------\n* 重新打开此窗口来刷新登陆信息";
+        val i =
+            "\n登陆信息: \n昵称: %s\nUID: %s\nArk-Coins: %s\n---------\n* 重新打开此窗口来刷新登陆信息"
 
-        final TextView textView = new TextView(context);
-        final TextView tvInfo = new TextView(context);
-        final TextView subtitle = new TextView(context);
+        val textView = TextView(context)
+        val tvInfo = TextView(context)
+        val subtitle = TextView(context)
 
-        textView.setText("\n提示：为了确保此功能不被滥用，我们需要您绑定第三方账号以便进行管理和验证。\n在未登录的情况下，此功能将无法使用。\n\n");
-        tvInfo.setText(String.format(i, "未知", "未知", "未知"));
+        textView.text =
+            "\n提示：为了确保此功能不被滥用，我们需要您绑定第三方账号以便进行管理和验证。\n在未登录的情况下，此功能将无法使用。\n\n"
+        tvInfo.text = String.format(i, "未知", "未知", "未知")
 
-        subtitle.setText("服务器绑定");
+        subtitle.text = "服务器绑定"
 
-        final MaterialButton materialButton = new MaterialButton(context);
-        materialButton.setText("登录您的 哔哩哔哩 账号");
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        materialButton.setLayoutParams(params);
+        val materialButton = MaterialButton(context)
+        materialButton.text = "登录您的 哔哩哔哩 账号"
+        val params = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        materialButton.layoutParams = params
 
-        new Thread(new Runnable(){
-            @Override
-            public void run() {
-                tvInfo.setText(String.format(i, "获取中...", "获取中...", "获取中..."));
+        Thread(object : Runnable {
+            override fun run() {
+                tvInfo.text = String.format(i, "获取中...", "获取中...", "获取中...")
                 try {
-                    StringBuilder sb = getStringBuilder();
+                    val sb = stringBuilder
 
-                    String userinfo = String.valueOf(sb);
-                    JSONObject jsonObject_userinfo = new JSONObject(userinfo).optJSONObject("card");
-                    String userName = Objects.requireNonNull(jsonObject_userinfo).optString("name");
-                    String userUID = Objects.requireNonNull(jsonObject_userinfo).optString("mid");
-                    String arkCoins = ArkRequest.getArkCoinsByMid(userUID, context);
-                    SyncUtils.post(() -> tvInfo.setText(String.format(i, userName, userUID, arkCoins)));
-                } catch (Exception e){
-                    Logger.e("showCFGDialogQQMessageTracker", e);
-                    SyncUtils.post(() -> tvInfo.setText(String.format(i, "出错了！", "出错了！", "出错了！")));
-                }
-            }
-
-            @NonNull
-            private StringBuilder getStringBuilder() throws IOException {
-                String urlPath = "https://account.bilibili.com/api/member/getCardByMid";
-                URL url = new URL(urlPath);
-                URLConnection conn = url.openConnection();
-
-                String cookies = ONOConf.getString("global", "cookies", "");
-
-                conn.setRequestProperty("Cookie", cookies);
-                conn.setDoInput(true);
-                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                }
-                return sb;
-            }
-        }).start();
-
-        final EditText signAddress = new EditText(context);
-        signAddress.setHint("签名服务器地址");
-        signAddress.setText(ConfigManager.dGetString(PrekCfgXXX + "signAddress", "https://ark.ouom.fun/"));
-
-        final EditText authenticationAddress = new EditText(context);
-        authenticationAddress.setHint("鉴权服务器地址");
-        authenticationAddress.setText(ConfigManager.dGetString(PrekCfgXXX + "authenticationAddress", "https://q.lyhc.top/"));
-
-        signAddress.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                ConfigManager.dPutString(PrekCfgXXX + "signAddress", String.valueOf(s));
-            }
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-
-        authenticationAddress.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                ConfigManager.dPutString(PrekCfgXXX + "authenticationAddress", String.valueOf(s));
-            }
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-
-        checkBox.setChecked(ConfigManager.dGetBoolean(PrekClickableXXX + getItem(QQMessageTracker.class).getPath()));
-        checkBoxDef.setChecked(ConfigManager.dGetBooleanDefTrue(PrekCfgXXX + "usingDefSetting"));
-
-        layout.addView(checkBox);
-        layout.addView(materialButton);
-        layout.addView(textView);
-
-        layout.addView(subtitle);
-        layout.addView(signAddress);
-        layout.addView(authenticationAddress);
-        layout.addView(checkBoxDef);
-        layout.addView(tvInfo);
-
-        if (checkBoxDef.isChecked()) {
-            signAddress.setEnabled(false);
-            authenticationAddress.setEnabled(false);
-        }
-
-        checkBoxDef.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            signAddress.setEnabled(!isChecked);
-            authenticationAddress.setEnabled(!isChecked);
-
-            ConfigManager.dPutBoolean(PrekCfgXXX + "usingDefSetting", isChecked);
-            if (isChecked) {
-                signAddress.setText("https://ark.ouom.fun/");
-                authenticationAddress.setText("https://q.lyhc.top/");
-            }
-        });
-
-        scrollView.addView(layout);
-
-        builder.setView(scrollView);
-
-
-        builder.setNegativeButton("关闭", (dialog, which) -> dialog.cancel());
-
-        checkBox.setChecked(item.isEnabled());
-
-        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            ConfigManager.dPutBoolean(PrekClickableXXX + item.getPath(), isChecked);
-            item.setEnabled(isChecked);
-            if (isChecked) {
-                item.startLoad();
-            }
-        });
-
-        materialButton.setOnClickListener(v -> {
-            Intent intent = new Intent(v.getContext(), BiliLoginActivity.class);
-            v.getContext().startActivity(intent);
-        });
-
-
-
-        builder.show();
-    }
-
-    public static void showCFGDialogStickerPanelEntry(BaseClickableFunctionHookItem item, Context context){
-        if (context == null) return;
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        builder.setTitle("表情面板");
-
-        LinearLayout layout = new LinearLayout(context);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(16, 16, 16, 16);
-
-        final MaterialCheckBox checkBox = new MaterialCheckBox(context);
-        checkBox.setText("启用");
-
-        final MaterialCheckBox checkBox2 = new MaterialCheckBox(context);
-        checkBox2.setText("替换长按事件优先级（轻触即唤起）");
-
-        checkBox.setChecked(ConfigManager.dGetBoolean(PrekClickableXXX + getItem(StickerPanelEntry.class).getPath()));
-        checkBox2.setChecked(ConfigManager.dGetBoolean(PrekCfgXXX + "replaceStickerPanelClickEvent"));
-        final TextView textView = new TextView(context);
-        textView.setText("更多设置");
-        layout.addView(checkBox);
-        layout.addView(textView);
-        layout.addView(checkBox2);
-
-        builder.setView(layout);
-
-        final TextView warningText = new TextView(context);
-        layout.addView(warningText);
-
-        builder.setNegativeButton("关闭", (dialog, which) -> dialog.cancel());
-
-        checkBox.setChecked(item.isEnabled());
-
-        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            ConfigManager.dPutBoolean(PrekClickableXXX + item.getPath(), isChecked);
-            item.setEnabled(isChecked);
-            if (isChecked) {
-                item.startLoad();
-            }
-        });
-
-        checkBox2.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            ConfigManager.dPutBoolean(PrekCfgXXX + "replaceStickerPanelClickEvent", isChecked);
-            if (isChecked) {
-                item.startLoad();
-            }
-        });
-
-
-
-        builder.show();
-    }
-
-    public static void showCFGDialogSelfMessageReactor(BaseClickableFunctionHookItem item,
-                                                       Context context) {
-
-        if (context == null) return;
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        builder.setTitle("自我回应");
-
-        LinearLayout root = new LinearLayout(context);
-        root.setOrientation(LinearLayout.VERTICAL);
-        int pad = (int) (16 * context.getResources().getDisplayMetrics().density);
-        root.setPadding(pad, pad, pad, pad);
-
-        MaterialCheckBox checkBox = new MaterialCheckBox(context);
-        checkBox.setText("启用");
-        checkBox.setChecked(item.isEnabled());
-        root.addView(checkBox);
-
-        TextInputLayout til = new TextInputLayout(context);
-        til.setHint("表情 ID（逗号分隔） 例：355,66");
-        til.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        TextInputEditText etInput = new TextInputEditText(context);
-        etInput.setInputType(InputType.TYPE_CLASS_NUMBER);
-        etInput.setKeyListener(DigitsKeyListener.getInstance("0123456789,"));
-        etInput.setText(ConfigManager.dGetString(
-                PrekCfgXXX + item.getPath(), "355"));
-        til.addView(etInput);
-        root.addView(til);
-
-        builder.setView(root);
-
-        builder.setNegativeButton("关闭", (d, w) -> d.cancel());
-        builder.setPositiveButton("确定", null);   // 手动处理点击
-
-        final Pattern pattern = Pattern.compile("^\\d+(,\\d+)*$");
-
-        AlertDialog dialog = builder.create();
-        dialog.setOnShowListener(dlg -> {
-
-            Button btnOk = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
-            btnOk.setEnabled(false);
-
-            checkBox.setOnCheckedChangeListener((v, isChecked) -> {
-                item.setEnabled(isChecked);
-                ConfigManager.dPutBoolean(
-                        PrekClickableXXX + item.getPath(), isChecked);
-
-                if (isChecked) item.startLoad();
-            });
-
-            TextWatcher watcher = new TextWatcher() {
-                @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
-                @Override public void afterTextChanged(Editable s) {}
-                @Override
-                public void onTextChanged(CharSequence s, int st, int b, int c) {
-                    String v = s.toString().trim();
-                    if (pattern.matcher(v).matches()) {
-                        til.setError(null);
-                        btnOk.setEnabled(true);
-                    } else {
-                        til.setError("格式错误：只能是数字和逗号，例如 355,66");
-                        btnOk.setEnabled(false);
+                    val userinfo = sb.toString()
+                    val jsonObjectUserinfo = JSONObject(userinfo).optJSONObject("card")
+                    val userName = Objects.requireNonNull(jsonObjectUserinfo).optString("name")
+                    val userUID = Objects.requireNonNull(jsonObjectUserinfo).optString("mid")
+                    val arkCoins = ArkRequest.getArkCoinsByMid(userUID, context)
+                    SyncUtils.post {
+                        tvInfo.text =
+                            String.format(i, userName, userUID, arkCoins)
+                    }
+                } catch (e: Exception) {
+                    Logger.e("showCFGDialogQQMessageTracker", e)
+                    SyncUtils.post {
+                        tvInfo.text =
+                            String.format(i, "出错了！", "出错了！", "出错了！")
                     }
                 }
-            };
-            etInput.addTextChangedListener(watcher);
+            }
 
-            btnOk.setOnClickListener(v -> {
-                String value = etInput.getText() != null
-                        ? etInput.getText().toString().trim()
-                        : "";
+            @get:Throws(IOException::class)
+            val stringBuilder: StringBuilder
+                get() {
+                    val urlPath = "https://account.bilibili.com/api/member/getCardByMid"
+                    val url = URL(urlPath)
+                    val conn = url.openConnection()
 
+                    val cookies = ONOConf.getString("global", "cookies", "")
+
+                    conn.setRequestProperty("Cookie", cookies)
+                    conn.doInput = true
+                    val br = BufferedReader(InputStreamReader(conn.getInputStream()))
+                    val sb = StringBuilder()
+                    var line: String?
+                    while ((br.readLine().also { line = it }) != null) {
+                        sb.append(line)
+                    }
+                    return sb
+                }
+        }).start()
+
+        val signAddress = EditText(context)
+        signAddress.hint = "签名服务器地址"
+        signAddress.setText(
+            ConfigManager.dGetString(
+                Constants.PrekCfgXXX + "signAddress",
+                "https://ark.ouom.fun/"
+            )
+        )
+
+        val authenticationAddress = EditText(context)
+        authenticationAddress.hint = "鉴权服务器地址"
+        authenticationAddress.setText(
+            ConfigManager.dGetString(
+                Constants.PrekCfgXXX + "authenticationAddress",
+                "https://q.lyhc.top/"
+            )
+        )
+
+        signAddress.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                ConfigManager.dPutString(Constants.PrekCfgXXX + "signAddress", s.toString())
+            }
+
+            override fun afterTextChanged(s: Editable) {}
+        })
+
+        authenticationAddress.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                ConfigManager.dPutString(
+                    Constants.PrekCfgXXX + "authenticationAddress",
+                    s.toString()
+                )
+            }
+
+            override fun afterTextChanged(s: Editable) {}
+        })
+
+        checkBox.isChecked = ConfigManager.dGetBoolean(
+            Constants.PrekClickableXXX + HookItemFactory.getItem(
+                QQMessageTracker::class.java
+            ).path
+        )
+        checkBoxDef.isChecked =
+            ConfigManager.dGetBooleanDefTrue(Constants.PrekCfgXXX + "usingDefSetting")
+
+        layout.addView(checkBox)
+        layout.addView(materialButton)
+        layout.addView(textView)
+
+        layout.addView(subtitle)
+        layout.addView(signAddress)
+        layout.addView(authenticationAddress)
+        layout.addView(checkBoxDef)
+        layout.addView(tvInfo)
+
+        if (checkBoxDef.isChecked) {
+            signAddress.isEnabled = false
+            authenticationAddress.isEnabled = false
+        }
+
+        checkBoxDef.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+            signAddress.isEnabled =
+                !isChecked
+            authenticationAddress.isEnabled = !isChecked
+
+            ConfigManager.dPutBoolean(
+                Constants.PrekCfgXXX + "usingDefSetting",
+                isChecked
+            )
+            if (isChecked) {
+                signAddress.setText("https://ark.ouom.fun/")
+                authenticationAddress.setText("https://q.lyhc.top/")
+            }
+        }
+
+        scrollView.addView(layout)
+
+        builder.setView(scrollView)
+
+
+        builder.setNegativeButton(
+            "关闭"
+        ) { dialog: DialogInterface, _: Int -> dialog.cancel() }
+
+        checkBox.isChecked = item.isEnabled
+
+        checkBox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+            ConfigManager.dPutBoolean(
+                Constants.PrekClickableXXX + item.path,
+                isChecked
+            )
+            item.isEnabled = isChecked
+            if (isChecked) {
+                item.startLoad()
+            }
+        }
+
+        materialButton.setOnClickListener { v: View ->
+            val intent = Intent(
+                v.context,
+                BiliLoginActivity::class.java
+            )
+            v.context.startActivity(intent)
+        }
+
+
+
+        builder.show()
+    }
+
+    fun showCFGDialogStickerPanelEntry(item: BaseClickableFunctionHookItem, context: Context?) {
+        if (context == null) return
+        val builder = MaterialAlertDialogBuilder(context)
+        builder.setTitle("表情面板")
+
+        val layout = LinearLayout(context)
+        layout.orientation = LinearLayout.VERTICAL
+        layout.setPadding(16, 16, 16, 16)
+
+        val checkBox = MaterialCheckBox(context)
+        checkBox.text = "启用"
+
+        val checkBox2 = MaterialCheckBox(context)
+        checkBox2.text = "替换长按事件优先级（轻触即唤起）"
+
+        checkBox.isChecked = ConfigManager.dGetBoolean(
+            Constants.PrekClickableXXX + HookItemFactory.getItem(
+                StickerPanelEntry::class.java
+            ).path
+        )
+        checkBox2.isChecked =
+            ConfigManager.dGetBoolean(Constants.PrekCfgXXX + "replaceStickerPanelClickEvent")
+        val textView = TextView(context)
+        textView.text = "更多设置"
+        layout.addView(checkBox)
+        layout.addView(textView)
+        layout.addView(checkBox2)
+
+        builder.setView(layout)
+
+        val warningText = TextView(context)
+        layout.addView(warningText)
+
+        builder.setNegativeButton(
+            "关闭"
+        ) { dialog: DialogInterface, _: Int -> dialog.cancel() }
+
+        checkBox.isChecked = item.isEnabled
+
+        checkBox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+            ConfigManager.dPutBoolean(
+                Constants.PrekClickableXXX + item.path,
+                isChecked
+            )
+            item.isEnabled = isChecked
+            if (isChecked) {
+                item.startLoad()
+            }
+        }
+
+        checkBox2.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+            ConfigManager.dPutBoolean(
+                Constants.PrekCfgXXX + "replaceStickerPanelClickEvent",
+                isChecked
+            )
+            if (isChecked) {
+                item.startLoad()
+            }
+        }
+
+
+
+        builder.show()
+    }
+
+    fun showCFGDialogSelfMessageReactor(
+        item: BaseClickableFunctionHookItem,
+        context: Context?
+    ) {
+        if (context == null) return
+
+        val builder = MaterialAlertDialogBuilder(context)
+        builder.setTitle("自我回应")
+
+        val root = LinearLayout(context)
+        root.orientation = LinearLayout.VERTICAL
+        val pad = (16 * context.resources.displayMetrics.density).toInt()
+        root.setPadding(pad, pad, pad, pad)
+
+        val checkBox = MaterialCheckBox(context)
+        checkBox.text = "启用"
+        checkBox.isChecked = item.isEnabled
+        root.addView(checkBox)
+
+        val til = TextInputLayout(context)
+        til.hint = "表情 ID（逗号分隔） 例：355,66"
+        til.layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        val etInput = TextInputEditText(context)
+        etInput.inputType = InputType.TYPE_CLASS_NUMBER
+        etInput.keyListener = DigitsKeyListener.getInstance("0123456789,")
+        etInput.setText(
+            ConfigManager.dGetString(
+                Constants.PrekCfgXXX + item.path, "355"
+            )
+        )
+        til.addView(etInput)
+        root.addView(til)
+
+        builder.setView(root)
+
+        builder.setNegativeButton(
+            "关闭"
+        ) { d: DialogInterface, _: Int -> d.cancel() }
+        builder.setPositiveButton("确定", null) // 手动处理点击
+
+        val pattern = Pattern.compile("^\\d+(,\\d+)*$")
+
+        val dialog = builder.create()
+        dialog.setOnShowListener {
+            val btnOk = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+            btnOk.isEnabled = false
+
+            checkBox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+                item.isEnabled =
+                    isChecked
+                ConfigManager.dPutBoolean(
+                    Constants.PrekClickableXXX + item.path, isChecked
+                )
+                if (isChecked) item.startLoad()
+            }
+
+            val watcher: TextWatcher = object : TextWatcher {
+                override fun beforeTextChanged(
+                    s: CharSequence,
+                    st: Int,
+                    c: Int,
+                    a: Int
+                ) {
+                }
+
+                override fun afterTextChanged(s: Editable) {}
+                override fun onTextChanged(
+                    s: CharSequence,
+                    st: Int,
+                    b: Int,
+                    c: Int
+                ) {
+                    val v = s.toString().trim()
+                    if (pattern.matcher(v).matches()) {
+                        til.error = null
+                        btnOk.isEnabled = true
+                    } else {
+                        til.error = "格式错误：只能是数字和逗号，例如 355,66"
+                        btnOk.isEnabled = false
+                    }
+                }
+            }
+            etInput.addTextChangedListener(watcher)
+
+            btnOk.setOnClickListener {
+                val value = if (etInput.text != null)
+                    etInput.text.toString().trim()
+                else
+                    ""
                 if (!pattern.matcher(value).matches()) {
-                    til.setError("格式错误：只能是数字和逗号，例如 355,66");
-                    return;
+                    til.error = "格式错误：只能是数字和逗号，例如 355,66"
+                    return@setOnClickListener
                 }
 
                 ConfigManager.dPutString(
-                        PrekCfgXXX + item.getPath(), value);
+                    Constants.PrekCfgXXX + item.path, value
+                )
+                dialog.dismiss()
+            }
+            etInput.post {
+                watcher.onTextChanged(
+                    etInput.text, 0, 0, 0
+                )
+            }
+        }
 
-                dialog.dismiss();
-            });
-
-            etInput.post(() -> watcher.onTextChanged(
-                    etInput.getText(), 0, 0, 0));
-        });
-
-        dialog.show();
+        dialog.show()
     }
+
+    fun showCFGDialogMessageEncryptor(item: BaseClickableFunctionHookItem, context: Context?) {
+        if (context == null) return
+
+        val builder = MaterialAlertDialogBuilder(context)
+        builder.setTitle("加密消息")
+
+        val root = LinearLayout(context)
+        root.orientation = LinearLayout.VERTICAL
+        val pad = (16 * context.resources.displayMetrics.density).toInt()
+        root.setPadding(pad, pad, pad, pad)
+
+        val checkBox = MaterialCheckBox(context)
+        checkBox.text = "启用"
+        checkBox.isChecked = item.isEnabled
+        root.addView(checkBox)
+
+        val til = TextInputLayout(context)
+        til.hint = "加密密钥（默认 ono）"
+        til.layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        val etInput = TextInputEditText(context)
+        etInput.inputType = InputType.TYPE_CLASS_TEXT
+        etInput.setText(
+            ConfigManager.dGetString(
+                Constants.PrekCfgXXX + item.path, "ono"
+            )
+        )
+        til.addView(etInput)
+        root.addView(til)
+
+        builder.setView(root)
+
+        builder.setNegativeButton(
+            "关闭"
+        ) { d: DialogInterface, _: Int -> d.cancel() }
+        builder.setPositiveButton("确定", null) // 手动处理点击
+
+        val dialog = builder.create()
+        dialog.setOnShowListener {
+            val btnOk = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+            btnOk.isEnabled = false
+
+            checkBox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+                item.isEnabled =
+                    isChecked
+                ConfigManager.dPutBoolean(
+                    Constants.PrekClickableXXX + item.path, isChecked
+                )
+                if (isChecked) item.startLoad()
+            }
+
+            val watcher: TextWatcher = object : TextWatcher {
+                override fun beforeTextChanged(
+                    s: CharSequence,
+                    st: Int,
+                    c: Int,
+                    a: Int
+                ) {}
+
+                override fun afterTextChanged(s: Editable) {}
+                override fun onTextChanged(
+                    s: CharSequence,
+                    st: Int,
+                    b: Int,
+                    c: Int
+                ) {
+                    val v = s.toString().trim()
+                    if (v.isNotEmpty()) {
+                        til.error = null
+                        btnOk.isEnabled = true
+                    } else {
+                        til.error = "输入不能为空"
+                        btnOk.isEnabled = false
+                    }
+                }
+            }
+            etInput.addTextChangedListener(watcher)
+
+            btnOk.setOnClickListener {
+                val value = if (etInput.text != null)
+                    etInput.text.toString().trim()
+                else
+                    ""
+                if (value.isEmpty()) {
+                    til.error = "输入不能为空"
+                    return@setOnClickListener
+                }
+
+                ConfigManager.dPutString(
+                    Constants.PrekCfgXXX + item.path, value
+                )
+                dialog.dismiss()
+            }
+
+            etInput.post {
+                watcher.onTextChanged(
+                    etInput.text, 0, 0, 0
+                )
+            }
+        }
+
+        dialog.show()
+    }
+
 }
