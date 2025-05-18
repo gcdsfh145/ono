@@ -9,6 +9,7 @@ import com.lxj.xpopup.XPopup
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import de.robv.android.xposed.XposedHelpers
+import moe.ono.bridge.ntapi.ChatTypeConstants.GROUP
 import moe.ono.config.CacheConfig
 import moe.ono.config.ConfigManager
 import moe.ono.constants.Constants
@@ -24,8 +25,10 @@ import moe.ono.hooks.item.developer.QQPacketHelperEntry
 import moe.ono.hooks.item.sigma.QQMessageTracker
 import moe.ono.reflex.XMethod
 import moe.ono.ui.CommonContextWrapper
+import moe.ono.util.ContactUtils
 import moe.ono.util.Initiator
 import moe.ono.util.Logger
+import moe.ono.util.Session
 import moe.ono.util.SyncUtils
 
 @SuppressLint("DiscouragedApi")
@@ -77,6 +80,12 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
             ).path
         )
 
+        val messageEncryptor = ConfigManager.getDefaultConfig().getBooleanOrFalse(
+            Constants.PrekClickableXXX + HookItemFactory.getItem(
+                MessageEncryptor::class.java
+            ).path
+        )
+
         val items = ArrayList<String>()
         if (qqPacketHelper) {
             items.add("QQPacketHelper")
@@ -87,6 +96,13 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
         if (qqMessageTracker) {
             items.add("已读追踪")
         }
+
+        if (!messageEncryptor) {
+            items.add("开启加密抄送")
+        } else {
+            items.add("关闭加密抄送")
+        }
+
 
         items.add("匿名化")
         XPopup.Builder(fixCtx)
@@ -115,6 +131,20 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
                         SyncUtils.runOnUiThread { QQMessageTrackerDialog.createView(view.context) }
                     } catch (e: Exception) {
                         Toasts.error(view.context, "请求失败")
+                    }
+                    "开启加密抄送" -> {
+                        ConfigManager.dPutBoolean(
+                            Constants.PrekClickableXXX + HookItemFactory.getItem(
+                                MessageEncryptor::class.java
+                            ).path, true
+                        )
+                    }
+                    "关闭加密抄送" -> {
+                        ConfigManager.dPutBoolean(
+                            Constants.PrekClickableXXX + HookItemFactory.getItem(
+                                MessageEncryptor::class.java
+                            ).path, false
+                        )
                     }
 
                 }
