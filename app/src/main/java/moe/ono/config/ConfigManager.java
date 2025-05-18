@@ -1,5 +1,7 @@
 package moe.ono.config;
 
+import static moe.ono.hooks._core.factory.HookItemFactory.getItem;
+
 import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
@@ -13,6 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import moe.ono.constants.Constants;
+import moe.ono.hooks._base.BaseHookItem;
 import moe.ono.util.AppRuntimeHelper;
 
 public abstract class ConfigManager implements SharedPreferences, SharedPreferences.Editor {
@@ -185,6 +189,26 @@ public abstract class ConfigManager implements SharedPreferences, SharedPreferen
     public int getIntOrDefault(@NonNull String key, int def) {
         return getInt(key, def);
     }
+
+    public static boolean isEnable(Class<BaseHookItem> clazz) {
+        return dGetBoolean(Constants.PrekClickableXXX + getItem(clazz).getPath());
+    }
+
+    public static String getStringConfig(Class<BaseHookItem> clazz, String d) {
+        return dGetString(Constants.PrekCfgXXX + getItem(clazz).getPath(), d);
+    }
+    public static String getStringConfig(Class<BaseHookItem> clazz, String d, String tag) {
+        return dGetString(Constants.PrekCfgXXX + getItem(clazz).getPath() + "_" + tag, d);
+    }
+
+    public static int getIntConfig(Class<BaseHookItem> clazz, int d) {
+        return dGetInt(Constants.PrekCfgXXX + getItem(clazz).getPath(), d);
+    }
+    public static int getIntConfig(Class<BaseHookItem> clazz, int d, String tag) {
+        return dGetInt(Constants.PrekCfgXXX + getItem(clazz).getPath() + "_" + tag, d);
+    }
+
+
 
     @Nullable
     public abstract String getString(@NonNull String key);
