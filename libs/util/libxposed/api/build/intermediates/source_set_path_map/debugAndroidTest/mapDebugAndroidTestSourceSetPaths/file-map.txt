@@ -1,5 +1,0 @@
-io.github.libxposed.api.test.api-androidTest-0 E:\Xposed\ono\libs\util\libxposed\api\build\generated\res\resValues\androidTest\debug
-io.github.libxposed.api.test.api-mergeDebugAndroidTestResources-1 E:\Xposed\ono\libs\util\libxposed\api\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
-io.github.libxposed.api.test.api-mergeDebugAndroidTestResources-2 E:\Xposed\ono\libs\util\libxposed\api\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
-io.github.libxposed.api.test.api-debugAndroidTest-3 E:\Xposed\ono\libs\util\libxposed\api\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources
-io.github.libxposed.api.test.api-debug-4 E:\Xposed\ono\libs\util\libxposed\api\build\intermediates\packaged_res\debug\packageDebugResources
