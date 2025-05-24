@@ -6,8 +6,13 @@ import android.app.Activity;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
+import lombok.Getter;
+import lombok.Setter;
 import moe.ono.bridge.kernelcompat.ContactCompat;
 import moe.ono.util.Logger;
 
@@ -30,6 +35,10 @@ public class CacheConfig {
     private static Class x5ValueCallbackClass;
     private static MsgRecord msgRecord;
     private static ContactCompat contactCompat;
+    private static Object iqqntWrapperSessionInstance;
+
+    public static final Map<Integer, PbSendMsgPacket> pbSendMsgPacketMap = new HashMap<>();
+    private static int nextPbSendMsgPacketIndex = 0;
 
     public static String getRKeyGroup() {
         if (rkeyGroup == null){
@@ -112,6 +121,47 @@ public class CacheConfig {
         return Objects.requireNonNullElse(recreateCount, 0);
     }
 
+    public static int getPbSendMsgPacketIndex() {
+        if (pbSendMsgPacketMap.isEmpty()) {
+            return -1;
+        }
+
+        Integer lastKey = null;
+        for (Integer key : pbSendMsgPacketMap.keySet()) {
+            lastKey = key;
+        }
+        return lastKey;
+    }
+
+
+    public static PbSendMsgPacket getPbSendMsgPacket(int index) {
+        return pbSendMsgPacketMap.get(index);
+    }
+
+    public static boolean containsPbSendMsgPacket(int index) {
+        return pbSendMsgPacketMap.containsKey(index);
+    }
+
+
+    public static void clearPbSendMsgPackets() {
+        pbSendMsgPacketMap.clear();
+        nextPbSendMsgPacketIndex = 0;
+    }
+
+    public static void removeLastPbSendMsgPacket() {
+        if (!pbSendMsgPacketMap.isEmpty()) {
+            Integer lastKey = null;
+            for (Integer key : pbSendMsgPacketMap.keySet()) {
+                lastKey = key;
+            }
+            if (lastKey != null) {
+                pbSendMsgPacketMap.remove(lastKey);
+                nextPbSendMsgPacketIndex = Math.min(nextPbSendMsgPacketIndex, lastKey);
+            }
+        }
+    }
+
+
     public static Boolean isAutoMosaicNameNT() {
         return Objects.requireNonNullElse(isAutoMosaicNameNT, false);
     }
@@ -129,6 +179,15 @@ public class CacheConfig {
         return Objects.requireNonNullElse(contactCompat, null);
     }
 
+    public static void setIQQntWrapperSessionInstance(Object object) {
+        Objects.requireNonNull(object);
+        CacheConfig.iqqntWrapperSessionInstance = object;
+    }
+
+    public static Object getIQQntWrapperSessionInstance() {
+        return Objects.requireNonNullElse(iqqntWrapperSessionInstance, null);
+    }
+
     public static void setContactCompat(ContactCompat contactCompat) {
         CacheConfig.contactCompat = contactCompat;
     }
@@ -142,6 +201,14 @@ public class CacheConfig {
     public static void addRecreateCount() {
         CacheConfig.recreateCount = getRecreateCount() + 1;
     }
+
+    public static int addPbSendMsgPacket(PbSendMsgPacket value) {
+        Objects.requireNonNull(value, "Packet value cannot be null");
+        int index = nextPbSendMsgPacketIndex++;
+        pbSendMsgPacketMap.put(index, value);
+        return index;
+    }
+
 
     public static void addReceiver(String name) {
         Objects.requireNonNull(name);
@@ -163,4 +230,23 @@ public class CacheConfig {
 
     }
 
+    public static class PbSendMsgPacket {
+        private final String content;
+        private final String peerid;
+
+        public PbSendMsgPacket(String content, String peerid) {
+            this.content = content;
+            this.peerid =  peerid;
+        }
+
+        public String getContent() {
+            return content;
+        }
+
+        public String getPeerid() {
+            return peerid;
+        }
+    }
+
 }
+

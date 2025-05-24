@@ -13,6 +13,9 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import moe.ono.BuildConfig
+import moe.ono.config.CacheConfig
+import moe.ono.hooks._core.factory.HookItemFactory.getItem
+import moe.ono.hooks.item.developer.QQPacketHelperC2CDisplayFixer
 import java.io.ByteArrayOutputStream
 import kotlin.random.Random
 import kotlin.random.nextUInt
@@ -88,6 +91,10 @@ fun sendMessage(
         val rawBytes = encodeMessage(map)
 
         QQInterfaces.sendBuffer("MessageSvc.PbSendMsg", true, rawBytes)
+        if (getItem(QQPacketHelperC2CDisplayFixer::class.java).isEnabled) {
+            CacheConfig.addPbSendMsgPacket(CacheConfig.PbSendMsgPacket(content, id))
+        }
+
     } catch (e: Exception) {
         Log.e("${BuildConfig.TAG}!err", "sendMessage failed: ${e.message}", e)
     }

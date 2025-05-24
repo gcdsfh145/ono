@@ -1,14 +1,20 @@
 package moe.ono.hooks.base.api
 
 import com.google.protobuf.UnknownFieldSet
+import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
+import de.robv.android.xposed.XposedBridge
+import de.robv.android.xposed.XposedHelpers
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.protobuf.ProtoBuf
+import moe.ono.config.CacheConfig.getIQQntWrapperSessionInstance
+import moe.ono.config.CacheConfig.setIQQntWrapperSessionInstance
 import moe.ono.config.ConfigManager
 import moe.ono.constants.Constants
+import moe.ono.constants.Constants.CLAZZ_CPP_PROXY
 import moe.ono.ext.getUnknownObject
 import moe.ono.ext.getUnknownObjects
 import moe.ono.hooks._base.ApiHookItem
@@ -25,14 +31,17 @@ import moe.ono.hooks.protocol.entries.TextMsgExtPbResvAttr
 import moe.ono.reflex.ClassUtils
 import moe.ono.reflex.MethodUtils
 import moe.ono.util.AesUtils
+import moe.ono.util.Initiator.load
+import moe.ono.util.Logger
 import moe.ono.util.QAppUtils
 import top.artmoe.inao.entries.InfoSyncPushOuterClass
 import top.artmoe.inao.entries.MsgPushOuterClass
 
+
 @HookItem(path = "API/监听MsfPush")
 class QQOnMsfPush : ApiHookItem() {
     override fun entry(classLoader: ClassLoader) {
-        val onMSFPushMethod = MethodUtils.create("com.tencent.qqnt.kernel.nativeinterface.IQQNTWrapperSession\$CppProxy")
+        val onMSFPushMethod = MethodUtils.create(CLAZZ_CPP_PROXY)
             .params(
                 String::class.java,
                 ByteArray::class.java,
@@ -40,6 +49,14 @@ class QQOnMsfPush : ApiHookItem() {
             )
             .methodName("onMsfPush")
             .first()
+
+
+        hookAfter(load(CLAZZ_CPP_PROXY), {
+            run {
+                setIQQntWrapperSessionInstance(it.thisObject)
+                Logger.i("CppProxy instance captured via constructor: ${getIQQntWrapperSessionInstance()}")
+            }
+        }, Long::class.javaPrimitiveType)
 
 
         hookBefore(onMSFPushMethod) { param ->

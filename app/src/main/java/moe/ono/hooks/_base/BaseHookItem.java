@@ -1,13 +1,17 @@
 package moe.ono.hooks._base;
 
+import static de.robv.android.xposed.XposedHelpers.findClass;
+import static de.robv.android.xposed.XposedHelpers.findConstructorExact;
 import static moe.ono.constants.Constants.PrekCfgXXX;
 
 import androidx.annotation.NonNull;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedHelpers;
 import moe.ono.config.ConfigManager;
 import moe.ono.hooks._core.factory.ExceptionFactory;
 import moe.ono.startup.HybridClassLoader;
@@ -103,11 +107,34 @@ public abstract class BaseHookItem {
         });
     }
 
+    protected XC_MethodHook.Unhook hookBefore(Class<?> clazz, HookAction action, Object... parameterTypesAndCallback) {
+        Constructor<?> m = findConstructorExact(clazz, getParameterClasses(clazz.getClassLoader(), parameterTypesAndCallback));
+
+        return XposedBridge.hookMethod(m, new XC_MethodHook(ConfigManager.dGetInt(PrekCfgXXX+"hook_priority",50)) {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) {
+                tryExecute(param, action);
+            }
+        });
+    }
+
+
     /**
      * 标准hook方法执行后
      */
     protected XC_MethodHook.Unhook hookAfter(Member method, HookAction action) {
         return XposedBridge.hookMethod(method, new XC_MethodHook(ConfigManager.dGetInt(PrekCfgXXX+"hook_priority",50)) {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) {
+                tryExecute(param, action);
+            }
+        });
+    }
+
+    protected XC_MethodHook.Unhook hookAfter(Class<?> clazz, HookAction action, Object... parameterTypesAndCallback) {
+        Constructor<?> m = findConstructorExact(clazz, getParameterClasses(clazz.getClassLoader(), parameterTypesAndCallback));
+
+        return XposedBridge.hookMethod(m, new XC_MethodHook(ConfigManager.dGetInt(PrekCfgXXX+"hook_priority",50)) {
             @Override
             protected void afterHookedMethod(MethodHookParam param) {
                 tryExecute(param, action);
@@ -151,6 +178,36 @@ public abstract class BaseHookItem {
             ExceptionFactory.add(this, throwable);
         }
     }
+
+    private static Class<?>[] getParameterClasses(ClassLoader classLoader, Object[] parameterTypesAndCallback) {
+        Class<?>[] parameterClasses = null;
+        for (int i = parameterTypesAndCallback.length - 1; i >= 0; i--) {
+            Object type = parameterTypesAndCallback[i];
+            if (type == null)
+                throw new NullPointerException("parameter type must not be null");
+
+            // ignore trailing callback
+            if (type instanceof XC_MethodHook)
+                continue;
+
+            if (parameterClasses == null)
+                parameterClasses = new Class<?>[i+1];
+
+            if (type instanceof Class)
+                parameterClasses[i] = (Class<?>) type;
+            else if (type instanceof String)
+                parameterClasses[i] = findClass((String) type, classLoader);
+            else
+                throw new IllegalArgumentException("parameter type must either be specified as Class or String", null);
+        }
+
+        // if there are no arguments for the method
+        if (parameterClasses == null)
+            parameterClasses = new Class<?>[0];
+
+        return parameterClasses;
+    }
+
 
     /**
      * hook 动作 指代

@@ -9,6 +9,7 @@ public class Constants {
     public static final String CLAZZ_ACTIVITY_SPLASH = "com.tencent.mobileqq.activity.SplashActivity";
     public static final String CLAZZ_BASE_APPLICATION_IMPL = "com.tencent.common.app.BaseApplicationImpl";
     public static final String CLAZZ_PANEL_ICON_LINEAR_LAYOUT = "com.tencent.qqnt.aio.shortcutbar.PanelIconLinearLayout";
+    public static final String CLAZZ_CPP_PROXY = "com.tencent.qqnt.kernel.nativeinterface.IQQNTWrapperSession$CppProxy";
 
     public static final String MethodCacheKey_AIOParam = "method_AIOParam";
     public static final String MethodCacheKey_InputRoot = "method_InputRoot";
