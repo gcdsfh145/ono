@@ -211,4 +211,8 @@ dependencies {
     implementation(libs.hutool.core)
 
     implementation(libs.nanohttpd)
+
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+
 }
