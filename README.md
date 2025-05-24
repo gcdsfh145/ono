@@ -63,6 +63,9 @@ QQ, Now with Superpowers
 ### 其它
 - 支持 native hook
 
+### 优化
+- 减小模块体积
+
 ### 已知问题/等待修复
 > 如果你有能力且有时间修复，可以给我提 pr，谢谢啦
 
