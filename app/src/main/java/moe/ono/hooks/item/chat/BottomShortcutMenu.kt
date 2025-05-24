@@ -20,7 +20,9 @@ import moe.ono.hooks.XHook
 import moe.ono.hooks._base.BaseSwitchFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks._core.factory.HookItemFactory
+import moe.ono.hooks._core.factory.HookItemFactory.getItem
 import moe.ono.hooks.base.util.Toasts
+import moe.ono.hooks.item.developer.QQHookCodec
 import moe.ono.hooks.item.developer.QQPacketHelperEntry
 import moe.ono.hooks.item.sigma.QQMessageTracker
 import moe.ono.reflex.XMethod
@@ -97,11 +99,14 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
             items.add("已读追踪")
         }
 
-        if (!messageEncryptor) {
-            items.add("开启加密抄送")
-        } else {
-            items.add("关闭加密抄送")
+        if (getItem(QQHookCodec::class.java).isEnabled) {
+            if (!messageEncryptor) {
+                items.add("开启加密抄送")
+            } else {
+                items.add("关闭加密抄送")
+            }
         }
+
 
 
         items.add("匿名化")
