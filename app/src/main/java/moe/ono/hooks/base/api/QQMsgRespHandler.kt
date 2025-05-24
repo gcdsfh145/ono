@@ -2,13 +2,24 @@ package moe.ono.hooks.base.api
 
 import com.tencent.qphone.base.remote.FromServiceMsg
 import com.tencent.qphone.base.remote.ToServiceMsg
+import com.tencent.qqnt.kernel.nativeinterface.PushExtraInfo
+import de.robv.android.xposed.XposedHelpers.callMethod
+import kotlinx.serialization.json.*
 import moe.ono.R
+import moe.ono.bridge.ntapi.RelationNTUinAndUidApi.getUinFromUid
+import moe.ono.common.CheckUtils
+import moe.ono.config.CacheConfig
+import moe.ono.config.CacheConfig.getIQQntWrapperSessionInstance
 import moe.ono.config.CacheConfig.setRKeyGroup
 import moe.ono.config.CacheConfig.setRKeyPrivate
+import moe.ono.config.ONOConf
 import moe.ono.creator.PacketHelperDialog
 import moe.ono.creator.QQMessageFetcherResultDialog
 import moe.ono.hooks._base.ApiHookItem
 import moe.ono.hooks._core.annotation.HookItem
+import moe.ono.hooks._core.factory.HookItemFactory.getItem
+import moe.ono.hooks.item.developer.QQPacketHelperC2CDisplayFixer
+import moe.ono.hooks.protocol.buildMessage
 import moe.ono.reflex.XField
 import moe.ono.reflex.XMethod
 import moe.ono.service.QQInterfaces
@@ -18,17 +29,21 @@ import moe.ono.util.ContextUtils
 import moe.ono.util.FunProtoData
 import moe.ono.util.FunProtoData.getUnpPackage
 import moe.ono.util.Logger
+import moe.ono.util.QAppUtils
 import moe.ono.util.SyncUtils
 import moe.ono.util.Utils
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.util.Arrays
 import java.util.UUID
 import java.util.zip.Deflater
+import kotlin.random.Random
+import kotlin.random.nextUInt
 
 @HookItem(path = "API/QQMsgRespHandler")
 class QQMsgRespHandler : ApiHookItem() {
     private fun update() {
+        var pbSendCount = ONOConf.getInt("QQMsgRespHandler", "pbSendCount", 1000000)
         hookBefore(XMethod.clz("mqq.app.msghandle.MsgRespHandler").name("dispatchRespMsg").ignoreParam().get()) { param ->
             val serviceMsg: ToServiceMsg = XField.obj(param.args[1]).name("toServiceMsg").get()
             val fromServiceMsg: FromServiceMsg =
@@ -61,6 +76,172 @@ class QQMsgRespHandler : ApiHookItem() {
 
                     setRKeyGroup(rkeyGroup)
                     setRKeyPrivate(rkeyPrivate)
+                }
+
+                "trpc.qq_new_tech.status_svc.StatusService.UnRegister" -> {
+                    Logger.d("on trpc.qq_new_tech.status_svc.StatusService.UnRegister")
+                    QQInterfaces.update()
+                    injectServlet()
+                }
+
+                "MessageSvc.PbSendMsg" -> {
+                    Logger.d("on MessageSvc.PbSendMsg")
+                    if (!getItem(QQPacketHelperC2CDisplayFixer::class.java).isEnabled) {
+                        return@hookBefore
+                    }
+                    val index = CacheConfig.getPbSendMsgPacketIndex()
+                    Logger.d("pb.index", index.toString())
+                    if (index >= 0) {
+                        val msgtime =
+                            obj.getLong("3")
+                        val seq =
+                            obj.getLong("14")
+                        val pbObj = CacheConfig.getPbSendMsgPacket(index)
+                        val toUin = getUinFromUid(pbObj.peerid)
+                        val toPeerid = pbObj.peerid
+                        if (!CheckUtils.isInteger(toPeerid)) {
+                            val uin = QAppUtils.getCurrentUin()
+                            val uid = QAppUtils.UserUinToPeerID(uin)
+                            val syncPacket1 = "{\n" +
+                                    "  \"1\": {\n" +
+                                    "    \"1\": {\n" +
+                                    "      \"1\": $uin,\n" +
+                                    "      \"2\": \"$uid\",\n" +
+                                    "      \"5\": $uin,\n" +
+                                    "      \"6\": \"$uid\"\n" +
+                                    "    },\n" +
+                                    "    \"2\": {\n" +
+                                    "      \"1\": 528,\n" +
+                                    "      \"2\": 8,\n" +
+                                    "      \"3\": 8,\n" +
+                                    "      \"4\": 0,\n" +
+                                    "      \"5\": 0,\n" +
+                                    "      \"6\": $msgtime,\n" +
+                                    "      \"12\": 0" +
+                                    "    },\n" +
+                                    "    \"3\": {\n" +
+                                    "      \"1\": {\n" +
+                                    "        \n" +
+                                    "      },\n" +
+                                    "      \"2\": {\n" +
+                                    "        \"1\": {\n" +
+                                    "          \"1\": \"$toPeerid\",\n" +
+                                    "          \"2\": $msgtime,\n" +
+                                    "          \"20\": 0,\n" +
+                                    "          \"21\": 0,\n" +
+                                    "          \"9\": 0,\n" +
+                                    "          \"11\": 0\n" +
+                                    "        }\n" +
+                                    "      }\n" +
+                                    "    }\n" +
+                                    "  }\n" +
+                                    "}"
+                            Logger.d("syncPacket1", syncPacket1)
+                            callMethod(getIQQntWrapperSessionInstance(), "onMsfPush", "trpc.msg.olpush.OlPushService.MsgPush", buildMessage(syncPacket1), PushExtraInfo());
+
+                            var syncPacket2 = "{\n" +
+                                    "  \"1\": {\n" +
+                                    "    \"1\": {\n" +
+                                    "      \"1\": $uin,\n" +
+                                    "      \"2\": \"$uid\",\n" +
+                                    "      \"3\": 1001,\n" +
+                                    "      \"5\": $toUin,\n" +
+                                    "      \"6\": \"$toPeerid\"\n" +
+                                    "    },\n" +
+                                    "    \"2\": {\n" +
+                                    "      \"1\": 166,\n" +
+                                    "      \"3\": 11,\n" +
+                                    "      \"4\": 0,\n" +
+                                    "      \"5\": ${pbSendCount},\n" +
+                                    "      \"6\": $msgtime,\n" +
+                                    "      \"7\": 1,\n" +
+                                    "      \"11\": $seq,\n" +
+                                    "      \"28\": ${pbSendCount},\n" +
+                                    "      \"12\": 0,\n" +
+                                    "      \"14\": 0\n" +
+                                    "    },\n" +
+                                    "    \"3\": {\n" +
+                                    "      \"1\": {\n" +
+                                    "        \"1\": {\n" +
+                                    "          \"1\": 0,\n" +
+                                    "          \"2\": $msgtime,\n" +
+                                    "          \"3\": 1490340800,\n" +
+                                    "          \"4\": 0,\n" +
+                                    "          \"5\": 10,\n" +
+                                    "          \"6\": 0,\n" +
+                                    "          \"7\": 134,\n" +
+                                    "          \"8\": 2,\n" +
+                                    "          \"9\": \"宋体\"\n" +
+                                    "        },\n" +
+                                    "        \"2\": [\n" +
+                                    "          {\n" +
+                                    "            \"37\": {\n" +
+                                    "              \"17\": 105342,\n" +
+                                    "              \"1\": 10896,\n" +
+                                    "              \"19\": {\n" +
+                                    "                \"96\": 0,\n" +
+                                    "                \"34\": 0,\n" +
+                                    "                \"102\": {\n" +
+                                    "                  \"1\": {\n" +
+                                    "                    \"1\": 0,\n" +
+                                    "                    \"2\": 0,\n" +
+                                    "                    \"3\": 0,\n" +
+                                    "                    \"4\": 0\n" +
+                                    "                  }\n" +
+                                    "                },\n" +
+                                    "                \"73\": {\n" +
+                                    "                  \"2\": 0,\n" +
+                                    "                  \"6\": 6\n" +
+                                    "                },\n" +
+                                    "                \"25\": 0,\n" +
+                                    "                \"90\": {\n" +
+                                    "                  \"1\": $seq,\n" +
+                                    "                  \"2\": 0\n" +
+                                    "                },\n" +
+                                    "                \"30\": 0,\n" +
+                                    "                \"31\": 0,\n" +
+                                    "                \"15\": 65536\n" +
+                                    "              }\n" +
+                                    "            }\n" +
+                                    "          },\n" +
+                                    "          {\n" +
+                                    "            \"9\": {\n" +
+                                    "              \"1\": 2021111,\n" +
+                                    "              \"12\": 65536\n" +
+                                    "            }\n" +
+                                    "          }\n" +
+                                    "        ]\n" +
+                                    "      }\n" +
+                                    "    }\n" +
+                                    "  },\n" + " " +
+                                    " \"3\": 1,\n" +
+                                    "  \"4\": {\n" +
+                                    "    \"1\": \"0.0.0.0\",\n" +
+                                    "    \"2\": 20222,\n" +
+                                    "    \"3\": {\n" +
+                                    "      \"2\": 166,\n" +
+                                    "      \"3\": 11600,\n" +
+                                    "      \"4\": 0,\n" +
+                                    "      \"7\": 1,\n" +
+                                    "      \"8\": $uin\n" +
+                                    "    }\n" +
+                                    "  }\n" +
+                                    "}"
+
+
+                            val originalJson = JSONObject(syncPacket2)
+                            val appendContent = JSONObject(pbObj.content)
+                            appendToContentArray(originalJson, appendContent)
+                            syncPacket2 = originalJson.toString(4)
+
+                            Logger.d("syncPacket2", syncPacket2)
+                            callMethod(getIQQntWrapperSessionInstance(), "onMsfPush", "trpc.msg.olpush.OlPushService.MsgPush", buildMessage(syncPacket2), PushExtraInfo());
+                            CacheConfig.removeLastPbSendMsgPacket()
+                            pbSendCount++
+                            ONOConf.setInt("QQMsgRespHandler", "pbSendCount", pbSendCount)
+                        }
+
+                    }
                 }
 
                 "trpc.qq_new_tech.status_svc.StatusService.UnRegister" -> {
@@ -199,6 +380,26 @@ class QQMsgRespHandler : ApiHookItem() {
         System.arraycopy(compressedBytes, 0, result, 1, compressedBytes.size)
 
         return result
+    }
+
+    fun appendToContentArray(original: JSONObject, newContent: Any) {
+        val contentArray = original
+            .optJSONObject("1")
+            ?.optJSONObject("3")
+            ?.optJSONObject("1")
+            ?.optJSONArray("2") ?: JSONArray().also {
+            original.getJSONObject("1").getJSONObject("3").getJSONObject("1").put("2", it)
+        }
+
+        when (newContent) {
+            is JSONObject -> contentArray.put(newContent)
+            is JSONArray -> {
+                for (i in 0 until newContent.length()) {
+                    contentArray.put(newContent.getJSONObject(i))
+                }
+            }
+            else -> throw IllegalArgumentException("Unsupported type for content")
+        }
     }
 
 
