@@ -1,18 +1,19 @@
-package moe.ono.hooks.base.api
+package moe.ono.hooks.item.developer
 
+import moe.ono.config.CacheConfig
 import moe.ono.ext.EMPTY_BYTE_ARRAY
 import moe.ono.ext.beforeHook
 import moe.ono.ext.hookMethod
 import moe.ono.hooks._base.ApiHookItem
+import moe.ono.hooks._base.BaseSwitchFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.loader.hookapi.IHijacker
-import moe.ono.util.Initiator
 import moe.ono.util.Initiator.load
 import moe.ono.util.Logger
 import moe.ono.util.SyncUtils
 
-@HookItem(path = "API/注入 CodecWarpper", description = "用于捕获请求，如 MessageSvc.PbSendMsg")
-class QQHookCodec : ApiHookItem() {
+@HookItem(path = "开发者选项/注入 CodecWarpper", description = "用于捕获请求，如 MessageSvc.PbSendMsg\n* 部分功能依赖此选项，重启生效\n* QQ 会检测这里，非必要不开启")
+class QQHookCodec : BaseSwitchFunctionHookItem() {
     override fun entry(classLoader: ClassLoader) {
         val configClass = load("com.tencent.freesia.UnitedConfig")
         configClass?.let {
@@ -29,7 +30,6 @@ class QQHookCodec : ApiHookItem() {
             Logger.e("[QQHookCodec] CodecWarpper cannot be injected")
             return
         }
-
 
         codecWarpper.hookMethod("nativeEncodeRequest", beforeHook { it ->
             val uin: String
