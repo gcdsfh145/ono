@@ -9,3 +9,6 @@ local.properties
 .DS_Store
 Thumbs.db
 /libs/ui/xView/build/
+/buildSrc/build/
+/libs/util/libxposed/api/build/
+/libs/util/libxposed/service/build/
