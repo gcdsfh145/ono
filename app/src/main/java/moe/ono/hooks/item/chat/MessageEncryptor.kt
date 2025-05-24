@@ -18,9 +18,11 @@ import moe.ono.ext.getUnknownObjects
 import moe.ono.ext.toInnerValuesString
 import moe.ono.hooks._base.BaseClickableFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
-import moe.ono.hooks.base.api.QQHookCodec
+import moe.ono.hooks.base.util.Toasts
+import moe.ono.hooks.item.developer.QQHookCodec
 import moe.ono.hooks.protocol.entries.QQSsoSecureInfo
 import moe.ono.hooks.protocol.entries.TextMsgExtPbResvAttr
+import moe.ono.hostInfo
 import moe.ono.loader.hookapi.IHijacker
 import moe.ono.util.AesUtils.aesEncrypt
 import moe.ono.util.AesUtils.md5
@@ -28,7 +30,7 @@ import moe.ono.util.Logger
 import moe.ono.util.SyncUtils
 
 @SuppressLint("DiscouragedApi")
-@HookItem(path = "聊天与消息/群聊加密消息", description = "发送的消息将加密抄送，仅针对群聊\n* 禁止用于非法用途，违者后果自负")
+@HookItem(path = "聊天与消息/群聊加密消息", description = "发送的消息将加密抄送，仅针对群聊\n* 开启需重启\n* 禁止用于非法用途，违者后果自负\n* 需开启 '开发者选项/注入 CodecWarpper'")
 class MessageEncryptor : BaseClickableFunctionHookItem() {
     override fun entry(classLoader: ClassLoader) {
         QQHookCodec.hijackers.add(object: IHijacker {
@@ -103,6 +105,8 @@ class MessageEncryptor : BaseClickableFunctionHookItem() {
             param.args[14] = qqSecurityHeadBuilder.build().toByteArray()
         }
 
+        Toasts.info(hostInfo.application, "此消息正在加密抄送..")
+
         param.args[bufferIndex] = BytePacketBuilder().also {
             it.writeInt(data.size + 4)
             it.writeFully(data)
@@ -165,6 +169,9 @@ class MessageEncryptor : BaseClickableFunctionHookItem() {
     }
 
 
+    override fun alwaysRun(): Boolean {
+        return true
+    }
 
     override fun targetProcess(): Int {
         return SyncUtils.PROC_MSF
