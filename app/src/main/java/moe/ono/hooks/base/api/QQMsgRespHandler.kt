@@ -230,7 +230,14 @@ class QQMsgRespHandler : ApiHookItem() {
 
 
                             val originalJson = JSONObject(syncPacket2)
-                            val appendContent = JSONObject(pbObj.content)
+
+                            val raw = pbObj.content.trimStart()
+                            val appendContent: Any = if (raw.startsWith("[")) {
+                                JSONArray(raw)
+                            } else {
+                                JSONObject(raw)
+                            }
+
                             appendToContentArray(originalJson, appendContent)
                             syncPacket2 = originalJson.toString(4)
 
@@ -292,7 +299,7 @@ class QQMsgRespHandler : ApiHookItem() {
                                     "    }\n" +
                                     "}"
 
-                            PacketHelperDialog.setContent(content)
+                            PacketHelperDialog.setContent(content, true)
                         } else if (PacketHelperDialog.mRgSendBy.checkedRadioButtonId == R.id.rb_send_by_forwarding) {
                             if (!PacketHelperDialog.mRbXmlForward.isChecked) {
                                 val json = "{\n" +
@@ -331,7 +338,7 @@ class QQMsgRespHandler : ApiHookItem() {
                                         "    }\n" +
                                         "}"
 
-                                PacketHelperDialog.setContent(content)
+                                PacketHelperDialog.setContent(content, false)
                             } else {
                                 val xml = """<?xml version="1.0" encoding="utf-8"?><msg brief="${PacketHelperDialog.etDesc.text}" m_fileName="${UUID.randomUUID()}" action="viewMultiMsg" tSum="1" flag="3" m_resid="$resid" serviceID="35" m_fileSize="0"><item layout="1"><title color="#000000" size="34">聊天记录</title><title color="#777777" size="26">${PacketHelperDialog.etDesc.text}</title><hr></hr><summary color="#808080" size="26">PacketHelper@ouom_pub</summary></item><source name="@ouom_pub"></source></msg>"""
                                 Logger.d("xml", xml)
