@@ -137,7 +137,7 @@ class QQMsgRespHandler : ApiHookItem() {
                                     "  }\n" +
                                     "}"
                             Logger.d("syncPacket1", syncPacket1)
-                            callMethod(getIQQntWrapperSessionInstance(), "onMsfPush", "trpc.msg.olpush.OlPushService.MsgPush", buildMessage(syncPacket1), PushExtraInfo());
+                            callMethod(getIQQntWrapperSessionInstance(), "onMsfPush", "trpc.msg.olpush.OlPushService.MsgPush", buildMessage(syncPacket1), PushExtraInfo())
 
                             var syncPacket2 = "{\n" +
                                     "  \"1\": {\n" +
@@ -235,7 +235,7 @@ class QQMsgRespHandler : ApiHookItem() {
                             syncPacket2 = originalJson.toString(4)
 
                             Logger.d("syncPacket2", syncPacket2)
-                            callMethod(getIQQntWrapperSessionInstance(), "onMsfPush", "trpc.msg.olpush.OlPushService.MsgPush", buildMessage(syncPacket2), PushExtraInfo());
+                            callMethod(getIQQntWrapperSessionInstance(), "onMsfPush", "trpc.msg.olpush.OlPushService.MsgPush", buildMessage(syncPacket2), PushExtraInfo())
                             CacheConfig.removeLastPbSendMsgPacket()
                             pbSendCount++
                             ONOConf.setInt("QQMsgRespHandler", "pbSendCount", pbSendCount)
