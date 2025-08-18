@@ -117,30 +117,71 @@ public class QSettingsInjector extends ApiHookItem {
     }
 
     @NonNull
-    private XC_MethodHook getXcMethodHook(Class<?> kSimpleItemProcessor, Method setOnClickListener) throws NoSuchMethodException {
-        Constructor<?> ctorSimpleItemProcessor = kSimpleItemProcessor.getDeclaredConstructor(Context.class, int.class, CharSequence.class, int.class);
+    private XC_MethodHook getXcMethodHook(Class<?> kSimpleItemProcessor, Method setOnClickListener) {
+        final Constructor<?> ctorSimpleItemProcessor;
+        final int ctorArgCount;
+
+        Constructor<?> c;
+        int argc;
+        try {
+            // newer QQ (>= 9.1.91.x) has 5 args
+            c = kSimpleItemProcessor.getDeclaredConstructor(
+                    Context.class, int.class, CharSequence.class, int.class, String.class
+            );
+            argc = 5;
+        } catch (NoSuchMethodException e) {
+            try {
+                // older QQ has 4 args
+                c = kSimpleItemProcessor.getDeclaredConstructor(
+                        Context.class, int.class, CharSequence.class, int.class
+                );
+                argc = 4;
+            } catch (NoSuchMethodException ex) {
+                throw new IllegalStateException("SimpleItemProcessor constructor not found", ex);
+            }
+        }
+
+        ctorSimpleItemProcessor = c;
+        ctorArgCount = argc;
 
         return XHook.afterAlways(50, param -> {
             List<Object> result = (List<Object>) param.getResult();
             Context ctx = (Context) param.args[0];
-            Class<?> kItemProcessorGroup = result.get(0).getClass();
-            Constructor<?> ctor = kItemProcessorGroup.getDeclaredConstructor(List.class, CharSequence.class, CharSequence.class);
+
+            // inject resources
             Parasitics.injectModuleResources(ctx.getResources());
             @SuppressLint("DiscouragedApi")
             int resId = ctx.getResources().getIdentifier("qui_tuning", "drawable", ctx.getPackageName());
-            Object entryItem = ctorSimpleItemProcessor.newInstance(ctx, R.id.OnO_settingEntryItem, "ONO", resId);
+
+            // create entryItem depending on constructor args
+            Object entryItem;
+            if (ctorArgCount == 5) {
+                entryItem = ctorSimpleItemProcessor.newInstance(
+                        ctx, R.id.OnO_settingEntryItem, "ONO", resId, null
+                );
+            } else {
+                entryItem = ctorSimpleItemProcessor.newInstance(
+                        ctx, R.id.OnO_settingEntryItem, "ONO", resId
+                );
+            }
+
+            // set click listener
             Class<?> thatFunction0 = setOnClickListener.getParameterTypes()[0];
-            Object theUnit = thatFunction0.getClassLoader().loadClass("kotlin.Unit").getField("INSTANCE").get(null);
+            Object theUnit = thatFunction0.getClassLoader()
+                    .loadClass("kotlin.Unit").getField("INSTANCE").get(null);
             ClassLoader hostClassLoader = Initiator.getHostClassLoader();
             Object func0 = Proxy.newProxyInstance(hostClassLoader, new Class<?>[]{thatFunction0}, (proxy, method, args) -> {
                 if (method.getName().equals("invoke")) {
                     onSettingEntryClick(ctx);
                     return theUnit;
                 }
-                // must be sth from Object
                 return method.invoke(this, args);
             });
             setOnClickListener.invoke(entryItem, func0);
+
+            // insert entry into settings list
+            Class<?> kItemProcessorGroup = result.get(0).getClass();
+            Constructor<?> ctor = kItemProcessorGroup.getDeclaredConstructor(List.class, CharSequence.class, CharSequence.class);
             ArrayList<Object> list = new ArrayList<>(1);
             list.add(entryItem);
             Object group = ctor.newInstance(list, "", "");
