@@ -24,10 +24,15 @@ android {
     signingConfigs {
         create("release") {
             val storePath = project.findProperty("KEYSTORE_FILE") as String? ?: "ono.jks"
-            storeFile = file(storePath)
-            storePassword = project.findProperty("KEYSTORE_PASSWORD") as String? ?: ""
-            keyAlias = project.findProperty("KEY_ALIAS") as String? ?: "key0"
-            keyPassword = project.findProperty("KEY_PASSWORD") as String? ?: ""
+            val resolved = file(storePath)
+            if (resolved.exists()) {
+                storeFile = resolved
+                storePassword = project.findProperty("KEYSTORE_PASSWORD") as String? ?: ""
+                keyAlias = project.findProperty("KEY_ALIAS") as String? ?: "key0"
+                keyPassword = project.findProperty("KEY_PASSWORD") as String? ?: ""
+            } else {
+                println("🔐 Release keystore not found at '${resolved.path}'. Will fallback for PR/builds without secrets.")
+            }
         }
     }
 
@@ -40,10 +45,20 @@ android {
     }
 
     buildTypes {
+        val releaseSigning = signingConfigs.getByName("release")
+        val debugSigning = signingConfigs.getByName("debug")
+
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("release")
+
+            signingConfig = if (releaseSigning.storeFile?.exists() == true) {
+                releaseSigning
+            } else {
+                println("✅ No release keystore detected; using DEBUG signing for release variant (PR-friendly).")
+                debugSigning
+            }
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -103,7 +118,7 @@ fun hasConnectedDevice(): Boolean {
 val packageName = "com.tencent.mobileqq"
 val killQQ = tasks.register("killQQ") {
     group = "ono"
-    description = "Force‑stop QQ on a connected device; skips gracefully if none."
+    description = "Force-stop QQ on a connected device; skips gracefully if none."
     onlyIf { hasConnectedDevice() }
     doLast {
         val adbFile = adbProvider.orNull?.asFile ?: return@doLast
@@ -214,5 +229,4 @@ dependencies {
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
-
 }
