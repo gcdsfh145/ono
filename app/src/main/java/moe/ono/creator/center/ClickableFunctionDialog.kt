@@ -27,6 +27,7 @@ import moe.ono.config.ONOConf
 import moe.ono.constants.Constants
 import moe.ono.hooks._base.BaseClickableFunctionHookItem
 import moe.ono.hooks._core.factory.HookItemFactory
+import moe.ono.hooks.base.util.Toasts
 import moe.ono.hooks.item.chat.QQBubbleRedirect
 import moe.ono.hooks.item.chat.StickerPanelEntry
 import moe.ono.hooks.item.sigma.QQMessageTracker
@@ -659,8 +660,7 @@ object ClickableFunctionDialog {
         builder.setPositiveButton("确定") { dialog, i ->
             val itemId = input.text.toString().trim()
             if (itemId.isEmpty()) {
-                warningText.text = "气泡 Item ID 不能为空"
-                dialog.dismiss()
+                Toasts.error(context, "ItemID 不能为空")
                 return@setPositiveButton
             }
             QQBubbleRedirect.createCacheFile(itemId)
