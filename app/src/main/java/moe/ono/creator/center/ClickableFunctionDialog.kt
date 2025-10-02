@@ -27,6 +27,7 @@ import moe.ono.config.ONOConf
 import moe.ono.constants.Constants
 import moe.ono.hooks._base.BaseClickableFunctionHookItem
 import moe.ono.hooks._core.factory.HookItemFactory
+import moe.ono.hooks.item.chat.QQBubbleRedirect
 import moe.ono.hooks.item.chat.StickerPanelEntry
 import moe.ono.hooks.item.sigma.QQMessageTracker
 import moe.ono.hooks.item.sigma.QQSurnamePredictor
@@ -609,6 +610,65 @@ object ClickableFunctionDialog {
         }
 
         dialog.show()
+    }
+
+    fun showCFGDialogQQBubbleRedirect(item: BaseClickableFunctionHookItem, context: Context?) {
+        if (context == null) return
+        val builder = MaterialAlertDialogBuilder(context)
+        builder.setTitle("气泡重定向")
+
+        val layout = LinearLayout(context)
+        layout.orientation = LinearLayout.VERTICAL
+        layout.setPadding(16, 16, 16, 16)
+
+        val checkBox = MaterialCheckBox(context)
+        checkBox.text = "启用"
+
+        val textView = TextView(context)
+        val input = EditText(context)
+        input.hint = "气泡 Item ID"
+        input.setText(QQBubbleRedirect.getItemId())
+        textView.text = "气泡 Item ID"
+        layout.addView(checkBox)
+        layout.addView(textView)
+        layout.addView(input)
+
+        builder.setView(layout)
+
+        val warningText = TextView(context)
+        layout.addView(warningText)
+
+        builder.setNegativeButton(
+            "关闭"
+        ) { dialog: DialogInterface, _: Int -> dialog.cancel() }
+
+        checkBox.isChecked = item.isEnabled
+
+        checkBox.setOnCheckedChangeListener { buttonView: CompoundButton?, isChecked: Boolean ->
+            ConfigManager.dPutBoolean(
+                Constants.PrekClickableXXX + HookItemFactory.getItem(
+                    QQBubbleRedirect::class.java
+                ).path, isChecked
+            )
+            item.isEnabled = isChecked
+            if (isChecked) {
+                item.startLoad()
+            }
+        }
+
+        builder.setPositiveButton("确定") { dialog, i ->
+            val itemId = input.text.toString().trim()
+            if (itemId.isEmpty()) {
+                warningText.text = "气泡 Item ID 不能为空"
+                dialog.dismiss()
+                return@setPositiveButton
+            }
+            QQBubbleRedirect.createCacheFile(itemId)
+            dialog.dismiss()
+        }
+
+
+        builder.show()
     }
 
 }

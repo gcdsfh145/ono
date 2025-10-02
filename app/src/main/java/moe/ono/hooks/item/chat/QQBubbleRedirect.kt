@@ -5,13 +5,14 @@ import android.content.Context
 import android.webkit.JavascriptInterface
 import de.robv.android.xposed.XposedHelpers.findMethodExact
 import moe.ono.config.CacheConfig
-import moe.ono.hooks._base.BaseSwitchFunctionHookItem
+import moe.ono.hooks._base.BaseClickableFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks._core.factory.HookItemFactory.getItem
 import moe.ono.hooks.base.util.Toasts
 import moe.ono.hooks.clazz
 import moe.ono.util.AppRuntimeHelper
 import moe.ono.util.Logger
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -19,8 +20,8 @@ import java.lang.reflect.Method
 
 
 @SuppressLint("DiscouragedApi")
-@HookItem(path = "聊天与消息/气泡重定向", description = "重定向后的气泡对 iOS 设备无效\n开启后去商城任意找一个气泡点击应用即可\n* 重启生效")
-class QQBubbleRedirect : BaseSwitchFunctionHookItem() {
+@HookItem(path = "聊天与消息/气泡重定向", description = "重定向后的气泡对 iOS 设备无效\n开启后去商城任意找一个气泡点击应用即可\n也可以在弹窗内配置 Item ID\n* 重启生效")
+class QQBubbleRedirect : BaseClickableFunctionHookItem() {
     @Throws(Throwable::class)
     override fun entry(classLoader: ClassLoader) {
         try {
@@ -160,7 +161,7 @@ class QQBubbleRedirect : BaseSwitchFunctionHookItem() {
             }
         }
 
-        private fun createCacheFile(id: String) {
+         fun createCacheFile(id: String) {
             val jsonContent =
                 "{\"animations\":{\"stc1\":{\"align\":\"BL\",\"alpha\":\"false\",\"count\":\"12\",\"cycle_count\":\"3\",\"rect\":[\"0\",\"-80\",\"56\",\"80\"],\"time\":\"100\",\"type\":\"static\",\"zip_name\":\"voice\"}},\"color\":\"0xFFffffff\",\"id\":2727,\"key_animations\":[{\"align\":\"BL\",\"animation\":\"stc1\",\"count\":\"12\",\"cycle_count\":\"3\",\"key_word\":[\"我\",\"你\",\"他\",\"她\",\"它\",\"爱\",\"乐\",\"美\",\"高兴\",\"笑\",\"好\",\"的\",\"那\",\"拜拜\",\"么么\",\"晚安\",\"乖\",\"帅\",\"睡\",\"想\",\"是\",\"88\",\"不\",\"啊\",\"哈\",\"嗯\",\"呵\"],\"rect\":[\"0\",\"-80\",\"56\",\"80\"],\"time\":\"100\",\"version\":1516189158,\"zip_name\":\"voice\"}],\"link_color\":\"0xFF04018d\",\"loopList\":[#>id<#],\"name\":\"七彩心情\",\"version\":1516189158,\"voice_animation\":{\"align\":\"BL\",\"animation\":\"stc1\",\"count\":\"12\",\"rect\":[\"0\",\"-80\",\"56\",\"80\"],\"time\":\"100\"},\"zoom_point\":[\"65\",\"56\"]}"
             val cacheFile = File(CACHE_FILE)
@@ -176,6 +177,29 @@ class QQBubbleRedirect : BaseSwitchFunctionHookItem() {
                 Logger.i("[QQBubbleRedirect] 缓存文件创建成功: $CACHE_FILE")
             } catch (e: IOException) {
                 Logger.i("[QQBubbleRedirect] 缓存文件创建失败: ", e)
+            }
+        }
+
+        fun getItemId(): String {
+            try {
+                val cacheFile = File(CACHE_FILE)
+                if (cacheFile.exists()) {
+                    val jsonContent = cacheFile.readText()
+                    val json = JSONObject(jsonContent)
+                    val itemId = json.optJSONArray("loopList")
+                        ?.optString(0)
+                    if (itemId == null) {
+                        return ""
+                    } else if (itemId == "#>id<#") {
+                        return ""
+                    }
+                    return itemId
+                } else {
+                    return ""
+                }
+            } catch (e: Exception) {
+                Logger.e(e)
+                return ""
             }
         }
 

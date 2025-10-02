@@ -57,8 +57,10 @@ import rikka.preference.SimpleMenuPreference
 import java.lang.Integer.max
 import androidx.core.graphics.drawable.toDrawable
 import moe.ono.creator.center.ClickableFunctionDialog.showCFGDialogMessageEncryptor
+import moe.ono.creator.center.ClickableFunctionDialog.showCFGDialogQQBubbleRedirect
 import moe.ono.creator.center.ClickableFunctionDialog.showCFGDialogSelfMessageReactor
 import moe.ono.hooks.item.chat.MessageEncryptor
+import moe.ono.hooks.item.chat.QQBubbleRedirect
 import moe.ono.hooks.item.chat.SelfMessageReactor
 
 open class OUOSettingActivity : BaseActivity() {
@@ -430,6 +432,9 @@ open class OUOSettingActivity : BaseActivity() {
                     }
                     getItem(MessageEncryptor::class.java).path -> {
                         showCFGDialogMessageEncryptor(item, requireContext())
+                    }
+                    getItem(QQBubbleRedirect::class.java).path -> {
+                        showCFGDialogQQBubbleRedirect(item, requireContext())
                     }
                 }
             }
