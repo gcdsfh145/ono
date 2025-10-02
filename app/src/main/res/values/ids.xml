@@ -7,4 +7,5 @@
     <item type="id" name="item_check" />
     <item type="id" name="item_pull_msg" />
     <item name="ivTitleName" type="id"/>
+    <item name="item_modify_text_message" type="id" />
 </resources>
