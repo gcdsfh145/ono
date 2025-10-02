@@ -5,6 +5,8 @@ import moe.ono.hooks._base.ApiHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks.item.chat.StickerPanelEntry
 import moe.ono.hooks.item.developer.QQMessageFetcher
+import moe.ono.hooks.item.entertainment.ModifyTextMessage
+import moe.ono.hooks.item.entertainment.RespondFace
 import moe.ono.hooks.item.sigma.QQMessageTracker
 import moe.ono.util.Logger
 import java.lang.reflect.Modifier
@@ -15,6 +17,8 @@ class MenuBuilderHook : ApiHookItem() {
         StickerPanelEntry(),
         QQMessageTracker(),
         QQMessageFetcher(),
+        ModifyTextMessage(),
+        RespondFace()
     )
 
     override fun entry(classLoader: ClassLoader) {
